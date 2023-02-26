@@ -1,4 +1,4 @@
-name: nextai
+name: BioScan_croptool
 channels:
   - conda-forge
   - pytorch
