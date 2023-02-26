@@ -4,13 +4,8 @@ For now, you can set the environment by typing
 conda create -n BioScan-croptool python=3.10
 conda activate BioScan-croptool
 conda install pytorch torchvision pytorch-cuda=11.7 -c pytorch -c nvidia
-conda install -c anaconda scikit-learn
-conda install -c conda-forge tqdm
-conda install -c conda-forge matplotlib
-conda install -c conda-forge pytorch-lightning
-conda install -c conda-forge transformers
-conda install -c conda-forge pycocotools
-conda install -c conda-forge timm
+pip install -r requirements.txt
+
 ```
 in the terminal. However, based on your GPU version, you may have to modify the torch version and install other packages manually in difference version.
 # Data preparation
