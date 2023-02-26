@@ -1,19 +1,15 @@
 import argparse
 import os
 import sys
-
 import torch
-from PIL import Image
 from pytorch_lightning import Trainer
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import DetrFeatureExtractor
-
 from model import Detr
 from util.coco_relevent import CocoDetection
 from util.detr.datasets import get_coco_api_from_dataset
 from util.detr.datasets.coco_eval import CocoEvaluator
-
 
 
 def collate_fn(batch):
@@ -103,7 +99,6 @@ if __name__ == '__main__':
     parser.add_argument('--max_steps', type=int, default=300)
     parser.add_argument('--gradient_clip_val', type=float, default=0.1)
     parser.add_argument('--output_dir', type=str, required=True, help="The path used to store the checkpoint")
-    parser.add_argument('--visualize_number', type=int, default=5)
 
     args = parser.parse_args()
 
@@ -116,5 +111,3 @@ if __name__ == '__main__':
     trainer.fit(model)
 
     evaluation(model, val_dataset, val_dataloader, device, feature_extractor)
-
-    visualize(args, val_dataset, model, id2label)
