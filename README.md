@@ -2,7 +2,7 @@
 For now, you can set the environment by typing
 ```shell
 conda create -n BioScan_croptool 
-conda activate ioScan_croptool
+conda activate BioScan_croptool
 conda install pytorch torchvision pytorch-cuda=11.7 -c pytorch -c nvidia
 conda env update --file environment.yml
 ```
