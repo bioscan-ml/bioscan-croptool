@@ -24,3 +24,8 @@ You can put the imsect images that need to be cropped in this folder, then type
 python crop_images.py --input_dir original_images --checkpoint_path insect_detection_ckpt/lightning_logs/version_0/checkpoints/epoch=11-step=300.ckpt
 ```
 in the terminal.
+
+# Acknowledgement
+This repo is built upon the [Fine_tuning_DetrForObjectDetection_on_custom_dataset](https://github.com/NielsRogge/Transformers-Tutorials/blob/master/DETR/Fine_tuning_DetrForObjectDetection_on_custom_dataset_(balloon).ipynb)
+
+
