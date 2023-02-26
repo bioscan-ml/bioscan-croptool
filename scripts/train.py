@@ -13,7 +13,7 @@ from model import Detr
 from util.coco_relevent import CocoDetection
 from util.detr.datasets import get_coco_api_from_dataset
 from util.detr.datasets.coco_eval import CocoEvaluator
-from util.visualize_and_process_bbox import visualize_predictions
+
 
 
 def collate_fn(batch):
@@ -60,20 +60,7 @@ def initialize_trainer(args):
                    default_root_dir=args.output_dir)
 
 
-def visualize(args, val_dataset, model, id2label):
-    for i in range(args.visualize_number):
-        pixel_values, target = val_dataset[i]
-        pixel_values = pixel_values.unsqueeze(0).to(device)
 
-
-        outputs = model(pixel_values=pixel_values, pixel_mask=None)
-
-        image_id = target['image_id'].item()
-        image = val_dataset.coco.loadImgs(image_id)[0]
-
-        print(image['file_name'])
-        image = Image.open(os.path.join(args.val_folder, image['file_name']))
-        visualize_predictions(image, outputs, id2label)
 
 
 def evaluation(model, val_dataset, val_dataloader, device, feature_extractor):
