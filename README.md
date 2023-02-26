@@ -20,7 +20,7 @@ python scripts/train.py --data_dir data/insect --output_dir insect_detection_ckp
 ```
 Here is a checkpoint for you to use, so you can skip this step. (https://drive.google.com/file/d/1cYyg5TTFRigSxak5EBchLEij8XXHRNfk/view?usp=sharing)
 # Visualization
-To visualize the predicted bounding box, you can type
+To visualize the predicted bounding box
 ```shell
 python scripts/visualization.py --data_dir data/insect --checkpoint_path insect_detection_ckpt/lightning_logs/version_0/checkpoints/epoch=11-step=300.ckptinsect_detection_ckpt/lightning_logs/version_0/checkpoints/epoch=11-step=300.ckpt
 ```
