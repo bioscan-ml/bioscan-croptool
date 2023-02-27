@@ -12,7 +12,7 @@ in the terminal. However, based on your GPU version, you may have to modify the 
 Please download the annotated data and images from https://drive.google.com/file/d/1UdYd99MKRyvqirdAssV8Ds4dkfhXjtW3/view?usp=sharing. Then unzip it in `/data`.
 You can split and prepare the data by
 ```shell
-python data/process_and_split.py --input_dir 100_Rig_Images --dataset_name insect
+python data/process_and_split.py --input_dir data/100_Rig_Images --dataset_name data/insect
 ```
 # Train and eval
 ```shell
