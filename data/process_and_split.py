@@ -68,7 +68,7 @@ def split_data_and_copy_image(args, images, annotations, categories):
 
     for i in images:
         curr_id = i['id']
-        src = i['toras_path']
+        src = os.path.join(args.input_dir, i['file_name'])
         if curr_id in train_ids:
             train_images.append(i)
             dst = os.path.join(args.train_folder_path, i['file_name'])
