@@ -24,8 +24,8 @@ def scale_bbox(args, left, top, right, bottom):
     x_range = right - left
     y_range = bottom - top
 
-    x_change = x_range * args.crop_ratio
-    y_change = y_range * args.crop_ratio
+    x_change = x_range * args.crop_ratio - x_range
+    y_change = y_range * args.crop_ratio - y_range
 
     left = int(left - x_change / 2)
     right = int(right + x_change / 2)
@@ -57,8 +57,9 @@ def crop_image(args, model, device):
             bbox = get_bbox_from_output(outputs, image).detach().numpy()
             bbox = np.round(bbox, 0)
             left, top, right, bottom = scale_bbox(args, bbox[0], bbox[1], bbox[2], bbox[3])
+            # left, top, right, bottom = bbox[0], bbox[1], bbox[2], bbox[3]
             image_size = image.size
-            cropped_img = image.crop((max(left, 0), max(top, 0), min(right, image_size[1]), min(bottom, image_size[0])))
+            cropped_img = image.crop((max(left, 0), max(top, 0), min(right, image_size[0]), min(bottom, image_size[1])))
 
             cropped_img.save(os.path.join(args.output_dir, filename))
 
