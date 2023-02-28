@@ -35,16 +35,15 @@ def scale_bbox(args, left, top, right, bottom):
     return left, top, right, bottom
 
 
-def load_model_from_ckpt(args, device):
+def load_model_from_ckpt(args):
     # initial model and data path
     model = Detr.load_from_checkpoint(lr=1e-4, lr_backbone=1e-5, weight_decay=1e-4,
                                       checkpoint_path=args.checkpoint_path)
     model.eval()
-    model.to(device)
     return model
 
 
-def crop_image(args, model, device):
+def crop_image(args, model):
     # crop image
     feature_extractor = DetrFeatureExtractor.from_pretrained("facebook/detr-resnet-50")
     for filename in tqdm(os.listdir(args.input_dir)):
@@ -52,7 +51,7 @@ def crop_image(args, model, device):
         if os.path.isfile(f):
             image = Image.open(f)
             encoding = feature_extractor(images=image, return_tensors="pt")
-            pixel_values = encoding["pixel_values"].squeeze().unsqueeze(0).to(device)
+            pixel_values = encoding["pixel_values"].squeeze().unsqueeze(0)
             outputs = model(pixel_values=pixel_values, pixel_mask=None)
             bbox = get_bbox_from_output(outputs, image).detach().numpy()
             bbox = np.round(bbox, 0)
@@ -76,8 +75,8 @@ if __name__ == '__main__':
                         help="scale the bbox to crop larger or small area.")
     args = parser.parse_args()
     os.makedirs(args.output_dir, exist_ok=True)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = load_model_from_ckpt(args, device)
 
-    crop_image(args, model, device)
+    model = load_model_from_ckpt(args)
+
+    crop_image(args, model)

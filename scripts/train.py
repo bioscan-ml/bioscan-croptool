@@ -25,9 +25,6 @@ def collate_fn(batch):
 
 
 def create_dataloader(args):
-    if not torch.cuda.is_available():
-        sys.exit("CUDA is not available, please check your CUDA and torch version.")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     args.train_folder = os.path.join(args.data_dir, 'train')
     args.val_folder = os.path.join(args.data_dir, 'val')
     feature_extractor = DetrFeatureExtractor.from_pretrained("facebook/detr-resnet-50")
@@ -43,7 +40,7 @@ def create_dataloader(args):
     cats = train_dataset.coco.cats
     id2label = {k: v['name'] for k, v in cats.items()}
 
-    return train_dataloader, val_dataset, val_dataloader, device, feature_extractor, id2label
+    return train_dataloader, val_dataset, val_dataloader, feature_extractor, id2label
 
 
 def initialize_model(args, train_dataloader, val_dataloader):
@@ -59,19 +56,19 @@ def initialize_trainer(args):
 
 
 
-def evaluation(model, val_dataset, val_dataloader, device, feature_extractor):
+def evaluation(model, val_dataset, val_dataloader, feature_extractor):
     base_ds = get_coco_api_from_dataset(val_dataset)  # this is actually just calling the coco attribute
 
     iou_types = ['bbox']
     coco_evaluator = CocoEvaluator(base_ds, iou_types)
-    model.to(device)
+    # model
     model.eval()
     print("Running evaluation...")
     for idx, batch in enumerate(tqdm(val_dataloader)):
         # get the inputs
-        pixel_values = batch["pixel_values"].to(device)
-        pixel_mask = batch["pixel_mask"].to(device)
-        labels = [{k: v.to(device) for k, v in t.items()} for t in
+        pixel_values = batch["pixel_values"]
+        pixel_mask = batch["pixel_mask"]
+        labels = [{k: v for k, v in t.items()} for t in
                   batch["labels"]]  # these are in DETR format, resized + normalized
 
         # forward pass
@@ -101,8 +98,7 @@ if __name__ == '__main__':
     parser.add_argument('--output_dir', type=str, required=True, help="The path used to store the checkpoint")
 
     args = parser.parse_args()
-
-    train_dataloader, val_dataset, val_dataloader, device, feature_extractor, id2label = create_dataloader(args)
+    train_dataloader, val_dataset, val_dataloader, feature_extractor, id2label = create_dataloader(args)
 
     model = initialize_model(args, train_dataloader, val_dataloader)
 
@@ -110,4 +106,4 @@ if __name__ == '__main__':
 
     trainer.fit(model)
 
-    evaluation(model, val_dataset, val_dataloader, device, feature_extractor)
+    evaluation(model, val_dataset, val_dataloader, feature_extractor)

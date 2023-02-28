@@ -13,7 +13,7 @@ from util.visualize_and_process_bbox import visualize_predictions
 def visualize(args, val_dataset, model, id2label):
     for i in range(args.visualize_number):
         pixel_values, target = val_dataset[i]
-        pixel_values = pixel_values.unsqueeze(0).to(device)
+        pixel_values = pixel_values.unsqueeze(0)
         outputs = model(pixel_values=pixel_values, pixel_mask=None)
 
         image_id = target['image_id'].item()
@@ -32,9 +32,8 @@ if __name__ == '__main__':
     parser.add_argument('--visualize_number', type=int, default=5)
     args = parser.parse_args()
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = load_model_from_ckpt(args, device)
+    model = load_model_from_ckpt(args)
     args.val_folder = os.path.join(args.data_dir, 'val')
     feature_extractor = DetrFeatureExtractor.from_pretrained("facebook/detr-resnet-50")
     val_dataset = CocoDetection(img_folder=args.val_folder, feature_extractor=feature_extractor,
