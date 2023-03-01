@@ -16,7 +16,7 @@ from util.visualize_and_process_bbox import rescale_bboxes
 def get_bbox_from_output(pred, image):
     """
     Extract bounding boxes from the model's output.
-    Note that this function will keep the bounding box with highest score and discard others.
+    Note that this function will keep the bounding box with the highest confidence and discard others.
     """
     probas = pred.logits.softmax(-1)[0, :, :-1]
     probas_ = probas.max(-1).values
