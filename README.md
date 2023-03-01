@@ -31,7 +31,8 @@ python scripts/crop_images.py --input_dir original_images --checkpoint_path inse
 ```
 in the terminal.
 
+# TODO, add more description of the outputs.
+
 # Acknowledgement
 This repo is built upon [Fine_tuning_DetrForObjectDetection_on_custom_dataset](https://github.com/NielsRogge/Transformers-Tutorials/blob/master/DETR/Fine_tuning_DetrForObjectDetection_on_custom_dataset_(balloon).ipynb).
-
 
