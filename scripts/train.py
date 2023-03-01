@@ -100,7 +100,6 @@ def evaluation(model, val_dataset, val_dataloader, feature_extractor):
         pixel_mask = batch["pixel_mask"]
         labels = [{k: v for k, v in t.items()} for t in
                   batch["labels"]]  # these are in DETR format, resized + normalized
-
         # forward pass
         outputs = model.model(pixel_values=pixel_values, pixel_mask=pixel_mask)
 
