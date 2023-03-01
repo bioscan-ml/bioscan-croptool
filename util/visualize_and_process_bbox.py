@@ -50,3 +50,44 @@ def plot_results(pil_img, prob, boxes, id2label):
                 bbox=dict(facecolor='yellow', alpha=0.5))
     plt.axis('off')
     plt.show()
+
+
+def get_bbox_from_output(pred, image):
+    """
+    Extract bounding boxes from the model's output.
+    Note that this function will keep the bounding box with the highest confidence and discard others.
+    """
+    probas = pred.logits.softmax(-1)[0, :, :-1]
+    probas_ = probas.max(-1).values
+    arg_max = probas_.argmax()
+    probas_ = F.one_hot(arg_max, num_classes=len(probas_))
+    keep = probas_ > 0.5
+    bboxes_scaled = rescale_bboxes(pred.pred_boxes[0, keep].cpu(), image.size)
+    return bboxes_scaled[0]
+
+
+def scale_bbox(args, left, top, right, bottom):
+    """
+    Scale the bounding box based on args.crop_ratio.
+    """
+    x_range = right - left
+    y_range = bottom - top
+
+    x_change = x_range * args.crop_ratio - x_range
+    y_change = y_range * args.crop_ratio - y_range
+
+    left = int(left - x_change / 2)
+    right = int(right + x_change / 2)
+    top = int(top - y_change / 2)
+    bottom = int(bottom + y_change / 2)
+
+    return left, top, right, bottom
+
+
+def convert_to_xywh(boxes):
+    """
+    :param boxes: Bounding boxes in form x_min, y_min, x_max, z_max
+    :return: bounding boxes that store in torch tensor in form x_min, y_min, width and height.
+    """
+    x_min, y_min, x_max, y_max = boxes.unbind(1)
+    return torch.stack((x_min, y_min, x_max - x_min, y_max - y_min), dim=1)

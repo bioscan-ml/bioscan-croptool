@@ -3,53 +3,16 @@ import os
 import sys
 from os.path import dirname, abspath
 import numpy as np
-import torch.nn.functional as F
 from PIL import Image
 from tqdm import tqdm
 from transformers import DetrFeatureExtractor
+
+from model.detr import load_model_from_ckpt
+
 project_dir = dirname(dirname(abspath(__file__)))
 sys.path.append(project_dir)
-from model.detr import Detr
-from util.visualize_and_process_bbox import rescale_bboxes
 
-
-def get_bbox_from_output(pred, image):
-    """
-    Extract bounding boxes from the model's output.
-    Note that this function will keep the bounding box with the highest confidence and discard others.
-    """
-    probas = pred.logits.softmax(-1)[0, :, :-1]
-    probas_ = probas.max(-1).values
-    arg_max = probas_.argmax()
-    probas_ = F.one_hot(arg_max, num_classes=len(probas_))
-    keep = probas_ > 0.5
-    bboxes_scaled = rescale_bboxes(pred.pred_boxes[0, keep].cpu(), image.size)
-    return bboxes_scaled[0]
-
-
-def scale_bbox(args, left, top, right, bottom):
-    """
-    Scale the bounding box based on args.crop_ratio.
-    """
-    x_range = right - left
-    y_range = bottom - top
-
-    x_change = x_range * args.crop_ratio - x_range
-    y_change = y_range * args.crop_ratio - y_range
-
-    left = int(left - x_change / 2)
-    right = int(right + x_change / 2)
-    top = int(top - y_change / 2)
-    bottom = int(bottom + y_change / 2)
-
-    return left, top, right, bottom
-
-
-def load_model_from_ckpt(args):
-    model = Detr.load_from_checkpoint(lr=1e-4, lr_backbone=1e-5, weight_decay=1e-4,
-                                      checkpoint_path=args.checkpoint_path)
-    model.eval()
-    return model
+from util.visualize_and_process_bbox import get_bbox_from_output, scale_bbox
 
 
 def crop_image(args, model, feature_extractor):

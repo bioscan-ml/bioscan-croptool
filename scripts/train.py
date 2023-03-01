@@ -1,12 +1,14 @@
 import argparse
 import os
+import sys
+from os.path import dirname, abspath
+
 import torch
 from pytorch_lightning import Trainer
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import DetrFeatureExtractor
-from os.path import dirname, abspath
-import sys
+from util.evaluation_support import prepare_for_evaluation
 project_dir = dirname(dirname(abspath(__file__)))
 sys.path.append(project_dir)
 from util.coco_dataset import DetectionDataset
@@ -19,10 +21,7 @@ def collate_fn(batch):
     pixel_values = [item[0] for item in batch]
     encoding = feature_extractor.pad_and_create_pixel_mask(pixel_values, return_tensors="pt")
     labels = [item[1] for item in batch]
-    batch = {}
-    batch['pixel_values'] = encoding['pixel_values']
-    batch['pixel_mask'] = encoding['pixel_mask']
-    batch['labels'] = labels
+    batch = {'pixel_values': encoding['pixel_values'], 'pixel_mask': encoding['pixel_mask'], 'labels': labels}
     return batch
 
 
@@ -59,43 +58,6 @@ def initialize_trainer(args):
                        default_root_dir=args.output_dir, accelerator="auto")
 
 
-def convert_to_xywh(boxes):
-    """
-    :param boxes: Bounding boxes in form x_min, y_min, x_max, z_max
-    :return: bounding boxes that store in torch tensor in form x_min, y_min, width and height.
-    """
-    x_min, y_min, x_max, y_max = boxes.unbind(1)
-    return torch.stack((x_min, y_min, x_max - x_min, y_max - y_min), dim=1)
-
-
-def prepare_for_coco_detection(predictions):
-    """
-    Convert model's output to a format that is ready for coco_evaluator to evaluate.
-    :param predictions: Driect output from the model.
-    :return: List of dictionary that contains:image_id, category_id, bbox, score of the bounding box.
-    """
-    coco_results = []
-    for original_id, prediction in predictions.items():
-        if len(prediction) == 0:
-            continue
-        boxes = prediction["boxes"]
-        boxes = convert_to_xywh(boxes).tolist()
-        scores = prediction["scores"].tolist()
-        labels = prediction["labels"].tolist()
-        coco_results.extend(
-            [
-                {
-                    "image_id": original_id,
-                    "category_id": labels[k],
-                    "bbox": box,
-                    "score": scores[k],
-                }
-                for k, box in enumerate(boxes)
-            ]
-        )
-    return coco_results
-
-
 def evaluation(model, val_dataset, val_dataloader, feature_extractor):
     iou_types = ['bbox']
     coco_evaluator = CocoEvaluator(val_dataset.coco, iou_types)
@@ -115,7 +77,7 @@ def evaluation(model, val_dataset, val_dataloader, feature_extractor):
         results = feature_extractor.post_process(outputs, orig_target_sizes)  # convert outputs of model to COCO api
 
         res = {target['image_id'].item(): output for target, output in zip(labels, results)}
-        res = prepare_for_coco_detection(res)
+        res = prepare_for_evaluation(res)
         coco_evaluator.update(res)
 
     coco_evaluator.synchronize_between_processes()
