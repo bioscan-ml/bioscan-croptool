@@ -49,7 +49,11 @@ def initialize_model(args, train_dataloader, val_dataloader):
 
 
 def initialize_trainer(args):
-    return Trainer(gpus=args.gpus, max_steps=args.max_steps, gradient_clip_val=args.gradient_clip_val,
+    if not torch.cuda.is_available():
+        return Trainer(gpus=0, max_steps=args.max_steps, gradient_clip_val=args.gradient_clip_val,
+                       default_root_dir=args.output_dir)
+    else:
+        return Trainer(gpus=args.gpus, max_steps=args.max_steps, gradient_clip_val=args.gradient_clip_val,
                    default_root_dir=args.output_dir)
 
 
