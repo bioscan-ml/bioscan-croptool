@@ -2,13 +2,13 @@ import argparse
 import os
 import sys
 from os.path import dirname, abspath
-
 import torch
 from pytorch_lightning import Trainer
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import DetrFeatureExtractor
 from util.evaluation_support import prepare_for_evaluation
+
 project_dir = dirname(dirname(abspath(__file__)))
 sys.path.append(project_dir)
 from util.coco_dataset import DetectionDataset
@@ -21,7 +21,9 @@ def collate_fn(batch):
     pixel_values = [item[0] for item in batch]
     encoding = feature_extractor.pad_and_create_pixel_mask(pixel_values, return_tensors="pt")
     labels = [item[1] for item in batch]
-    batch = {'pixel_values': encoding['pixel_values'], 'pixel_mask': encoding['pixel_mask'], 'labels': labels}
+    batch = {'pixel_values': encoding['pixel_values'],
+             'pixel_mask': encoding['pixel_mask'],
+             'labels': labels}
     return batch
 
 
@@ -69,7 +71,7 @@ def evaluation(model, val_dataset, val_dataloader, feature_extractor):
         pixel_values = batch["pixel_values"]
         pixel_mask = batch["pixel_mask"]
         labels = [{k: v for k, v in t.items()} for t in
-                  batch["labels"]]  # these are in DETR format, resized + normalized
+                  batch["labels"]]
         # forward pass
         outputs = model.model(pixel_values=pixel_values, pixel_mask=pixel_mask)
 
