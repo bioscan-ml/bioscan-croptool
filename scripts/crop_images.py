@@ -1,11 +1,15 @@
 import argparse
 import os
+import sys
+from os.path import dirname, abspath
 import numpy as np
 import torch.nn.functional as F
 from PIL import Image
 from tqdm import tqdm
 from transformers import DetrFeatureExtractor
-from model import Detr
+project_dir = dirname(dirname(abspath(__file__)))
+sys.path.append(project_dir)
+from model.detr import Detr
 from util.visualize_and_process_bbox import rescale_bboxes
 
 
@@ -42,9 +46,8 @@ def load_model_from_ckpt(args):
     return model
 
 
-def crop_image(args, model):
+def crop_image(args, model, feature_extractor):
     # crop image
-    feature_extractor = DetrFeatureExtractor.from_pretrained("facebook/detr-resnet-50")
     for filename in tqdm(os.listdir(args.input_dir)):
         f = os.path.join(args.input_dir, filename)
         if os.path.isfile(f):
@@ -68,6 +71,8 @@ if __name__ == '__main__':
                         help="folder that contains the original images.")
     parser.add_argument('--checkpoint_path', type=str, required=True,
                         help="path to the checkpoint.")
+    parser.add_argument('--batch_size', type=int, default=4,
+                        help="Number of images in each batch")
     parser.add_argument('--output_dir', type=str, default="cropped_image",
                         help="folder that will contain the cropped images.")
     parser.add_argument('--crop_ratio', type=float, default=1.1,
@@ -75,7 +80,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     os.makedirs(args.output_dir, exist_ok=True)
 
+    feature_extractor = DetrFeatureExtractor.from_pretrained("facebook/detr-resnet-50")
 
     model = load_model_from_ckpt(args)
 
-    crop_image(args, model)
+    crop_image(args, model, feature_extractor)

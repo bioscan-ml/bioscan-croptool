@@ -1,15 +1,20 @@
 import argparse
 import os
-import sys
 import torch
+import torchvision
 from pytorch_lightning import Trainer
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import DetrFeatureExtractor
-from model import Detr
+from os.path import dirname, abspath
+import sys
+project_dir = dirname(dirname(abspath(__file__)))
+sys.path.append(project_dir)
 from util.coco_relevent import CocoDetection
-from util.detr.datasets import get_coco_api_from_dataset
-from util.detr.datasets.coco_eval import CocoEvaluator
+from model.detr import Detr
+from coco_eval import CocoEvaluator
+
+
 
 
 def collate_fn(batch):
@@ -54,17 +59,62 @@ def initialize_trainer(args):
                        default_root_dir=args.output_dir)
     else:
         return Trainer(gpus=args.gpus, max_steps=args.max_steps, gradient_clip_val=args.gradient_clip_val,
-                   default_root_dir=args.output_dir, accelerator="auto")
+                       default_root_dir=args.output_dir, accelerator="auto")
 
+def convert_to_xywh(boxes):
+    xmin, ymin, xmax, ymax = boxes.unbind(1)
+    return torch.stack((xmin, ymin, xmax - xmin, ymax - ymin), dim=1)
 
+def prepare_for_coco_detection(predictions):
+    coco_results = []
+    for original_id, prediction in predictions.items():
+        if len(prediction) == 0:
+            continue
+        boxes = prediction["boxes"]
+        boxes = convert_to_xywh(boxes).tolist()
+        scores = prediction["scores"].tolist()
+        labels = prediction["labels"].tolist()
+        coco_results.extend(
+            [
+                {
+                    "image_id": original_id,
+                    "category_id": labels[k],
+                    "bbox": box,
+                    "score": scores[k],
+                }
+                for k, box in enumerate(boxes)
+            ]
+        )
+    return coco_results
 
+def prepare_for_coco_detection(predictions):
+    coco_results = []
+    for original_id, prediction in predictions.items():
+        if len(prediction) == 0:
+            continue
 
+        boxes = prediction["boxes"]
+        boxes = convert_to_xywh(boxes).tolist()
+        scores = prediction["scores"].tolist()
+        labels = prediction["labels"].tolist()
+
+        coco_results.extend(
+            [
+                {
+                    "image_id": original_id,
+                    "category_id": labels[k],
+                    "bbox": box,
+                    "score": scores[k],
+                }
+                for k, box in enumerate(boxes)
+            ]
+        )
+    return coco_results
 
 def evaluation(model, val_dataset, val_dataloader, feature_extractor):
-    base_ds = get_coco_api_from_dataset(val_dataset)  # this is actually just calling the coco attribute
 
     iou_types = ['bbox']
-    coco_evaluator = CocoEvaluator(base_ds, iou_types)
+    coco_evaluator = CocoEvaluator(val_dataset.coco, iou_types)
     # model
     model.eval()
     print("Running evaluation...")
@@ -80,7 +130,9 @@ def evaluation(model, val_dataset, val_dataloader, feature_extractor):
 
         orig_target_sizes = torch.stack([target["orig_size"] for target in labels], dim=0)
         results = feature_extractor.post_process(outputs, orig_target_sizes)  # convert outputs of model to COCO api
+
         res = {target['image_id'].item(): output for target, output in zip(labels, results)}
+        res = prepare_for_coco_detection(res)
         coco_evaluator.update(res)
 
     coco_evaluator.synchronize_between_processes()
@@ -100,7 +152,6 @@ if __name__ == '__main__':
     parser.add_argument('--max_steps', type=int, default=300)
     parser.add_argument('--gradient_clip_val', type=float, default=0.1)
     parser.add_argument('--output_dir', type=str, required=True, help="The path used to store the checkpoint")
-
     args = parser.parse_args()
     train_dataloader, val_dataset, val_dataloader, feature_extractor, id2label = create_dataloader(args)
 

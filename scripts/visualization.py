@@ -1,11 +1,12 @@
 import argparse
 import os
-
-import torch
 from PIL import Image
 from transformers import DetrFeatureExtractor
-
 from crop_images import load_model_from_ckpt
+from os.path import dirname, abspath
+import sys
+project_dir = dirname(dirname(abspath(__file__)))
+sys.path.append(project_dir)
 from util.coco_relevent import CocoDetection
 from util.visualize_and_process_bbox import visualize_predictions
 

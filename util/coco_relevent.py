@@ -10,15 +10,8 @@ class CocoDetection(torchvision.datasets.CocoDetection):
     def __getitem__(self, idx):
         # read in PIL image and target in COCO format
         img, target = super(CocoDetection, self).__getitem__(idx)
-        # plt.imshow(img)
-        # plt.show()
-        # exit()
-        # preprocess image and target (converting target to DETR format, resizing + normalization of both image and target)
         image_id = self.ids[idx]
         target = {'image_id': image_id, 'annotations': target}
-        # print(img)
-        #
-        # print(len(target['annotations']))
         encoding = self.feature_extractor(images=img, annotations=target, return_tensors="pt")
         pixel_values = encoding["pixel_values"].squeeze()  # remove batch dimension
         target = encoding["labels"][0]  # remove batch dimension
