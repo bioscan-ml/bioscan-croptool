@@ -1,7 +1,6 @@
 import argparse
 import os
 import torch
-import torchvision
 from pytorch_lightning import Trainer
 from torch.utils.data import DataLoader
 from tqdm import tqdm
@@ -10,11 +9,9 @@ from os.path import dirname, abspath
 import sys
 project_dir = dirname(dirname(abspath(__file__)))
 sys.path.append(project_dir)
-from util.coco_relevent import CocoDetection
+from util.coco_dataset import DetectionDataset
 from model.detr import Detr
 from coco_eval import CocoEvaluator
-
-
 
 
 def collate_fn(batch):
@@ -29,14 +26,14 @@ def collate_fn(batch):
     return batch
 
 
-def create_dataloader(args):
+def initialize_dataloader(args):
     args.train_folder = os.path.join(args.data_dir, 'train')
     args.val_folder = os.path.join(args.data_dir, 'val')
     feature_extractor = DetrFeatureExtractor.from_pretrained("facebook/detr-resnet-50")
 
-    train_dataset = CocoDetection(img_folder=args.train_folder, feature_extractor=feature_extractor)
-    val_dataset = CocoDetection(img_folder=args.val_folder, feature_extractor=feature_extractor,
-                                train=False)
+    train_dataset = DetectionDataset(img_folder=args.train_folder, feature_extractor=feature_extractor)
+    val_dataset = DetectionDataset(img_folder=args.val_folder, feature_extractor=feature_extractor,
+                                   train=False)
     print("Number of training examples:", len(train_dataset))
     print("Number of validation examples:", len(val_dataset))
 
@@ -61,11 +58,22 @@ def initialize_trainer(args):
         return Trainer(gpus=args.gpus, max_steps=args.max_steps, gradient_clip_val=args.gradient_clip_val,
                        default_root_dir=args.output_dir, accelerator="auto")
 
+
 def convert_to_xywh(boxes):
-    xmin, ymin, xmax, ymax = boxes.unbind(1)
-    return torch.stack((xmin, ymin, xmax - xmin, ymax - ymin), dim=1)
+    """
+    :param boxes: Bounding boxes in form x_min, y_min, x_max, z_max
+    :return: bounding boxes that store in torch tensor in form x_min, y_min, width and height.
+    """
+    x_min, y_min, x_max, y_max = boxes.unbind(1)
+    return torch.stack((x_min, y_min, x_max - x_min, y_max - y_min), dim=1)
+
 
 def prepare_for_coco_detection(predictions):
+    """
+    Convert model's output to a format that is ready for coco_evaluator to evaluate.
+    :param predictions: Driect output from the model.
+    :return: List of dictionary that contains:image_id, category_id, bbox, score of the bounding box.
+    """
     coco_results = []
     for original_id, prediction in predictions.items():
         if len(prediction) == 0:
@@ -87,8 +95,8 @@ def prepare_for_coco_detection(predictions):
         )
     return coco_results
 
-def evaluation(model, val_dataset, val_dataloader, feature_extractor):
 
+def evaluation(model, val_dataset, val_dataloader, feature_extractor):
     iou_types = ['bbox']
     coco_evaluator = CocoEvaluator(val_dataset.coco, iou_types)
     # model
@@ -118,7 +126,7 @@ def evaluation(model, val_dataset, val_dataloader, feature_extractor):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_dir', type=str, required=True,
-                        help="path to the directory that contains the split data")
+                        help="path to the directory that contains the split data.")
     parser.add_argument('--batch_size', type=str, default=2)
     parser.add_argument('--learning_rate', type=float, default=1e-4)
     parser.add_argument('--lr_backbone', type=float, default=1e-5)
@@ -126,9 +134,9 @@ if __name__ == '__main__':
     parser.add_argument('--gpus', type=int, default=1)
     parser.add_argument('--max_steps', type=int, default=300)
     parser.add_argument('--gradient_clip_val', type=float, default=0.1)
-    parser.add_argument('--output_dir', type=str, required=True, help="The path used to store the checkpoint")
+    parser.add_argument('--output_dir', type=str, required=True, help="The path used to store the checkpoint.")
     args = parser.parse_args()
-    train_dataloader, val_dataset, val_dataloader, feature_extractor, id2label = create_dataloader(args)
+    train_dataloader, val_dataset, val_dataloader, feature_extractor, id2label = initialize_dataloader(args)
 
     model = initialize_model(args, train_dataloader, val_dataloader)
 

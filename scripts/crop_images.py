@@ -14,6 +14,10 @@ from util.visualize_and_process_bbox import rescale_bboxes
 
 
 def get_bbox_from_output(pred, image):
+    """
+    Extract bounding boxes from the model's output.
+    Note that this function will keep the bounding box with highest score and discard others.
+    """
     probas = pred.logits.softmax(-1)[0, :, :-1]
     probas_ = probas.max(-1).values
     arg_max = probas_.argmax()
@@ -24,6 +28,9 @@ def get_bbox_from_output(pred, image):
 
 
 def scale_bbox(args, left, top, right, bottom):
+    """
+    Scale the bounding box based on args.crop_ratio.
+    """
     x_range = right - left
     y_range = bottom - top
 
@@ -39,7 +46,6 @@ def scale_bbox(args, left, top, right, bottom):
 
 
 def load_model_from_ckpt(args):
-    # initial model and data path
     model = Detr.load_from_checkpoint(lr=1e-4, lr_backbone=1e-5, weight_decay=1e-4,
                                       checkpoint_path=args.checkpoint_path)
     model.eval()
@@ -47,7 +53,11 @@ def load_model_from_ckpt(args):
 
 
 def crop_image(args, model, feature_extractor):
-    # crop image
+    """
+    Crop and save images based on the predicted bounding boxes from the model.
+    :param model: Detr model that loaded from the checkpoint.
+    :param feature_extractor: A ResNet50 model as a standard image extractor.
+    """
     for filename in tqdm(os.listdir(args.input_dir)):
         f = os.path.join(args.input_dir, filename)
         if os.path.isfile(f):
@@ -58,7 +68,6 @@ def crop_image(args, model, feature_extractor):
             bbox = get_bbox_from_output(outputs, image).detach().numpy()
             bbox = np.round(bbox, 0)
             left, top, right, bottom = scale_bbox(args, bbox[0], bbox[1], bbox[2], bbox[3])
-            # left, top, right, bottom = bbox[0], bbox[1], bbox[2], bbox[3]
             image_size = image.size
             cropped_img = image.crop((max(left, 0), max(top, 0), min(right, image_size[0]), min(bottom, image_size[1])))
 
@@ -68,15 +77,15 @@ def crop_image(args, model, feature_extractor):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--input_dir', type=str, required=True,
-                        help="folder that contains the original images.")
+                        help="Folder that contains the original images.")
     parser.add_argument('--checkpoint_path', type=str, required=True,
-                        help="path to the checkpoint.")
+                        help="Path to the checkpoint.")
     parser.add_argument('--batch_size', type=int, default=4,
-                        help="Number of images in each batch")
+                        help="Number of images in each batch.")
     parser.add_argument('--output_dir', type=str, default="cropped_image",
-                        help="folder that will contain the cropped images.")
+                        help="Folder that will contain the cropped images.")
     parser.add_argument('--crop_ratio', type=float, default=1.1,
-                        help="scale the bbox to crop larger or small area.")
+                        help="Scale the bbox to crop larger or small area.")
     args = parser.parse_args()
     os.makedirs(args.output_dir, exist_ok=True)
 

@@ -5,9 +5,10 @@ from transformers import DetrFeatureExtractor
 from crop_images import load_model_from_ckpt
 from os.path import dirname, abspath
 import sys
+
 project_dir = dirname(dirname(abspath(__file__)))
 sys.path.append(project_dir)
-from util.coco_relevent import CocoDetection
+from util.coco_dataset import DetectionDataset
 from util.visualize_and_process_bbox import visualize_predictions
 
 
@@ -24,23 +25,22 @@ def visualize(args, val_dataset, model, id2label):
         image = Image.open(os.path.join(args.val_folder, image['file_name']))
         visualize_predictions(image, outputs, id2label)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_dir', type=str, required=True,
-                        help="path to the directory that contains the split data")
+                        help="Path to the directory that contains the split data.")
     parser.add_argument('--checkpoint_path', type=str, required=True,
-                        help="path to the checkpoint.")
+                        help="Path to the checkpoint.")
     parser.add_argument('--visualize_number', type=int, default=5)
     args = parser.parse_args()
-
 
     model = load_model_from_ckpt(args)
     args.val_folder = os.path.join(args.data_dir, 'val')
     feature_extractor = DetrFeatureExtractor.from_pretrained("facebook/detr-resnet-50")
-    val_dataset = CocoDetection(img_folder=args.val_folder, feature_extractor=feature_extractor,
-                                train=False)
+    val_dataset = DetectionDataset(img_folder=args.val_folder, feature_extractor=feature_extractor,
+                                   train=False)
     cats = val_dataset.coco.cats
     id2label = {k: v['name'] for k, v in cats.items()}
 
     visualize(args, val_dataset, model, id2label)
-

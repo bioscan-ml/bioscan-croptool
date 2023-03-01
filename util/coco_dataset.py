@@ -1,15 +1,22 @@
 import torchvision
 import os
 
-class CocoDetection(torchvision.datasets.CocoDetection):
+
+class DetectionDataset(torchvision.datasets.CocoDetection):
+    """
+    A torch dataset that inherit from CocoDetection class.
+    """
     def __init__(self, img_folder, feature_extractor, train=True):
         ann_file = os.path.join(img_folder, "custom_train.json" if train else "custom_val.json")
-        super(CocoDetection, self).__init__(img_folder, ann_file)
+        super(DetectionDataset, self).__init__(img_folder, ann_file)
         self.feature_extractor = feature_extractor
 
     def __getitem__(self, idx):
+        """
+        :return: pixel_values
+        """
         # read in PIL image and target in COCO format
-        img, target = super(CocoDetection, self).__getitem__(idx)
+        img, target = super(DetectionDataset, self).__getitem__(idx)
         image_id = self.ids[idx]
         target = {'image_id': image_id, 'annotations': target}
         encoding = self.feature_extractor(images=img, annotations=target, return_tensors="pt")
