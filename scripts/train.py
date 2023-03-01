@@ -54,7 +54,7 @@ def initialize_trainer(args):
                        default_root_dir=args.output_dir)
     else:
         return Trainer(gpus=args.gpus, max_steps=args.max_steps, gradient_clip_val=args.gradient_clip_val,
-                   default_root_dir=args.output_dir)
+                   default_root_dir=args.output_dir, accelerator="auto")
 
 
 
