@@ -7,10 +7,9 @@ from pytorch_lightning import Trainer
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import DetrFeatureExtractor
-from util.evaluation_support import prepare_for_evaluation
-
 project_dir = dirname(dirname(abspath(__file__)))
 sys.path.append(project_dir)
+from util.evaluation_support import prepare_for_evaluation
 from util.coco_dataset import DetectionDataset
 from model.detr import Detr
 from coco_eval import CocoEvaluator
