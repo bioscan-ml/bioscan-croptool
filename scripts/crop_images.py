@@ -6,12 +6,9 @@ import numpy as np
 from PIL import Image
 from tqdm import tqdm
 from transformers import DetrFeatureExtractor
-
-from model.detr import load_model_from_ckpt
-
 project_dir = dirname(dirname(abspath(__file__)))
 sys.path.append(project_dir)
-
+from model.detr import load_model_from_ckpt
 from util.visualize_and_process_bbox import get_bbox_from_output, scale_bbox
 
 
