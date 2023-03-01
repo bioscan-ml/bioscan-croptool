@@ -18,7 +18,7 @@ python data/process_and_split.py --input_dir data/100_Rig_Images --dataset_name 
 ```shell
 python scripts/train.py --data_dir data/insect --output_dir insect_detection_ckpt
 ```
-Here is a checkpoint for you to use, so you can skip this step. (https://drive.google.com/file/d/1cYyg5TTFRigSxak5EBchLEij8XXHRNfk/view?usp=sharing)
+Here is a checkpoint for you to use, so you can skip this step. (https://drive.google.com/file/d/1tzcyo0J7dQ9SwH5EKDdSt6EzEkPYASHV/view?usp=sharing)
 # Visualization
 To visualize the predicted bounding box
 ```shell
