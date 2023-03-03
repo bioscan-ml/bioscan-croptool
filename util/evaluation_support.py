@@ -10,7 +10,8 @@ def prepare_for_evaluation(predictions):
     coco_results = []
     for original_id, prediction in predictions.items():
         if len(prediction) == 0:
-            continue
+            exit(1)
+        #     TODO handle the special case.
         boxes = prediction["boxes"]
         boxes = convert_to_xywh(boxes).tolist()
         scores = prediction["scores"].tolist()

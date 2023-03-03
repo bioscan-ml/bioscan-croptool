@@ -20,7 +20,6 @@ def visualize(args, val_dataset, model, id2label):
         image_id = target['image_id'].item()
         image = val_dataset.coco.loadImgs(image_id)[0]
 
-        print(image['file_name'])
         image = Image.open(os.path.join(args.val_folder, image['file_name']))
         visualize_predictions(image, outputs, id2label)
 
@@ -36,10 +35,12 @@ if __name__ == '__main__':
 
     model = load_model_from_ckpt(args)
     args.val_folder = os.path.join(args.data_dir, 'val')
+
     feature_extractor = DetrFeatureExtractor.from_pretrained("facebook/detr-resnet-50")
+
     val_dataset = DetectionDataset(img_folder=args.val_folder, feature_extractor=feature_extractor,
                                    train=False)
-    cats = val_dataset.coco.cats
-    id2label = {k: v['name'] for k, v in cats.items()}
+    categories = val_dataset.coco.cats
+    id2label = {k: v['name'] for k, v in categories.items()}
 
     visualize(args, val_dataset, model, id2label)

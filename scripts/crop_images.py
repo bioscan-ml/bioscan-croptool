@@ -6,6 +6,7 @@ import numpy as np
 from PIL import Image
 from tqdm import tqdm
 from transformers import DetrFeatureExtractor
+
 project_dir = dirname(dirname(abspath(__file__)))
 sys.path.append(project_dir)
 from model.detr import load_model_from_ckpt
@@ -21,7 +22,12 @@ def crop_image(args, model, feature_extractor):
     for filename in tqdm(os.listdir(args.input_dir)):
         f = os.path.join(args.input_dir, filename)
         if os.path.isfile(f):
-            image = Image.open(f)
+            try:
+                image = Image.open(f)
+            except:
+                print("Image not found in: " + f)
+                exit(1)
+                # TODO: https://stackoverflow.com/questions/31751464/how-do-i-close-an-image-opened-in-pillow
             encoding = feature_extractor(images=image, return_tensors="pt")
             pixel_values = encoding["pixel_values"].squeeze().unsqueeze(0)
             outputs = model(pixel_values=pixel_values, pixel_mask=None)
@@ -44,7 +50,7 @@ if __name__ == '__main__':
                         help="Number of images in each batch.")
     parser.add_argument('--output_dir', type=str, default="cropped_image",
                         help="Folder that will contain the cropped images.")
-    parser.add_argument('--crop_ratio', type=float, default=1.1,
+    parser.add_argument('--crop_ratio', type=float, default=1.4,
                         help="Scale the bbox to crop larger or small area.")
     args = parser.parse_args()
     os.makedirs(args.output_dir, exist_ok=True)
