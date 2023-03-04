@@ -39,7 +39,7 @@ def initialize_dataloader(args):
 
     train_dataloader = DataLoader(train_dataset, collate_fn=collate_fn, batch_size=args.batch_size, shuffle=True)
     val_dataloader = DataLoader(val_dataset, collate_fn=collate_fn, batch_size=args.batch_size)
-    categories = train_dataset.coco.categories
+    categories = train_dataset.coco.cats
     id2label = {k: v['name'] for k, v in categories.items()}
 
     return train_dataloader, val_dataset, val_dataloader, feature_extractor, id2label
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     parser.add_argument('--lr_backbone', type=float, default=1e-5)
     parser.add_argument('--weight_decay', type=float, default=1e-4)
     parser.add_argument('--gpus', type=int, default=1)
-    parser.add_argument('--max_steps', type=int, default=1)
+    parser.add_argument('--max_steps', type=int, default=600)
     parser.add_argument('--gradient_clip_val', type=float, default=0.1)
     parser.add_argument('--output_dir', type=str, required=True, help="The path used to store the checkpoint.")
     args = parser.parse_args()

@@ -34,27 +34,10 @@ def add_missing_information_to_coco_json(coco_annotation_dict):
     return images, annotations
 
 
-def load_data_and_complete_coco_json(args):
+def split_data_and_copy_image(args):
     coco_annotation_file = open(os.path.join(args.input_dir, "coco_annotations.json"))
     coco_annotation_dict = json.load(coco_annotation_file)
-
-    if 'categories' not in coco_annotation_dict.keys() or len(coco_annotation_dict['categories']) == 0:
-        # Hard coded categories
-        # If the original coco file does not contain categories of the insect, hardcode one.
-        categories = [
-            {
-                "id": 0,
-                "name": "insect",
-                "supercategory": "N/A"
-            }
-        ]
-    else:
-        categories = coco_annotation_dict['categories']
-    images, annotations = add_missing_information_to_coco_json(coco_annotation_dict)
-    return images, annotations, categories
-
-
-def split_data_and_copy_image(args, images, annotations, categories):
+    images, annotations, categories = coco_annotation_dict['images'], coco_annotation_dict['annotations'], coco_annotation_dict['categories']
     ids = []
     for i in images:
         ids.append(i['id'])
@@ -107,6 +90,4 @@ if __name__ == '__main__':
 
     create_directories(args)
 
-    images, annotations, categories = load_data_and_complete_coco_json(args)
-
-    split_data_and_copy_image(args, images, annotations, categories)
+    split_data_and_copy_image(args)
