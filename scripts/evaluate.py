@@ -11,7 +11,7 @@ project_dir = dirname(dirname(abspath(__file__)))
 sys.path.append(project_dir)
 from util.evaluation_support import prepare_for_evaluation
 from util.coco_dataset import DetectionDataset
-from model.detr import Detr
+from model.detr import Detr, load_model_from_ckpt
 from coco_eval import CocoEvaluator
 
 
@@ -90,22 +90,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_dir', type=str, required=True,
                         help="path to the directory that contains the split data.")
-    parser.add_argument('--batch_size', type=str, default=8)
-    parser.add_argument('--learning_rate', type=float, default=1e-4)
-    parser.add_argument('--lr_backbone', type=float, default=1e-5)
-    parser.add_argument('--weight_decay', type=float, default=1e-4)
+    parser.add_argument('--batch_size', type=str, default=4)
     parser.add_argument('--gpus', type=int, default=1)
-    parser.add_argument('--max_steps', type=int, default=600)
-    parser.add_argument('--gradient_clip_val', type=float, default=0.1)
-    parser.add_argument('--output_dir', type=str, required=True, help="The path used to store the checkpoint.")
     parser.add_argument('--number_of_workers', type=int, default=4)
+    parser.add_argument('--checkpoint_path', type=str, required=True,
+                        help="Path to the checkpoint.")
     args = parser.parse_args()
-    train_dataloader, val_dataset, val_dataloader, feature_extractor, id2label = initialize_dataloader(args)
+    _, val_dataset, val_dataloader, feature_extractor, _ = initialize_dataloader(args)
 
-    model = initialize_model(args, train_dataloader, val_dataloader)
-
-    trainer = initialize_trainer(args)
-
-    trainer.fit(model)
+    model = load_model_from_ckpt(args)
 
     evaluation(model, val_dataset, val_dataloader, feature_extractor)

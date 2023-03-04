@@ -3,10 +3,9 @@ import os
 import sys
 from os.path import dirname, abspath
 import numpy as np
-from PIL import Image
 from tqdm import tqdm
 from transformers import DetrFeatureExtractor
-
+from PIL import Image, ImageDraw
 project_dir = dirname(dirname(abspath(__file__)))
 sys.path.append(project_dir)
 from model.detr import load_model_from_ckpt
@@ -33,7 +32,13 @@ def crop_image(args, model, feature_extractor):
             outputs = model(pixel_values=pixel_values, pixel_mask=None)
             bbox = get_bbox_from_output(outputs, image).detach().numpy()
             bbox = np.round(bbox, 0)
-            left, top, right, bottom = scale_bbox(args, bbox[0], bbox[1], bbox[2], bbox[3])
+            left, top, right, bottom = bbox[0], bbox[1], bbox[2], bbox[3]
+            if args.show_bbox:
+                draw = ImageDraw.Draw(image)
+                draw.rectangle((left, top, right, bottom), outline=(255, 0, 0), width=1)
+            left, top, right, bottom = scale_bbox(args, left, top, right, bottom)
+
+
             image_size = image.size
             cropped_img = image.crop((max(left, 0), max(top, 0), min(right, image_size[0]), min(bottom, image_size[1])))
 
@@ -52,6 +57,8 @@ if __name__ == '__main__':
                         help="Folder that will contain the cropped images.")
     parser.add_argument('--crop_ratio', type=float, default=1.4,
                         help="Scale the bbox to crop larger or small area.")
+    parser.add_argument('--show_bbox', type=bool, default=False,
+                        help="Show bounding box on the cropped images.")
     args = parser.parse_args()
     os.makedirs(args.output_dir, exist_ok=True)
 
