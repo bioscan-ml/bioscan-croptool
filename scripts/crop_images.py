@@ -35,7 +35,7 @@ def crop_image(args, model, feature_extractor):
             left, top, right, bottom = bbox[0], bbox[1], bbox[2], bbox[3]
             if args.show_bbox:
                 draw = ImageDraw.Draw(image)
-                draw.rectangle((left, top, right, bottom), outline=(255, 0, 0), width=1)
+                draw.rectangle((left, top, right, bottom), outline=(255, 0, 0), width=args.width_of_bbox)
             left, top, right, bottom = scale_bbox(args, left, top, right, bottom)
 
 
@@ -59,6 +59,8 @@ if __name__ == '__main__':
                         help="Scale the bbox to crop larger or small area.")
     parser.add_argument('--show_bbox', type=bool, default=False,
                         help="Show bounding box on the cropped images.")
+    parser.add_argument('--width_of_bbox', type=int, default=3,
+                        help="Define the width of the bound of bounding boxes.")
     args = parser.parse_args()
     os.makedirs(args.output_dir, exist_ok=True)
 
