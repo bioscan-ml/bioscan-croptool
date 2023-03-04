@@ -13,7 +13,7 @@ def add_missing_information_to_coco_json(coco_annotation_dict):
 
     # Adding missing information to the annotation data
     for i in images:
-        i['file_name'] = i['toras_path'][15:]
+        i['file_name'] = os.path.basename(os.path.normpath(i['toras_path']))
     for i in annotations:
         i['area'] = i['bbox'][2] * i['bbox'][3]
         i['iscrowd'] = 0

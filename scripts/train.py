@@ -37,8 +37,8 @@ def initialize_dataloader(args):
     print("Number of training examples:", len(train_dataset))
     print("Number of validation examples:", len(val_dataset))
 
-    train_dataloader = DataLoader(train_dataset, collate_fn=collate_fn, batch_size=args.batch_size, shuffle=True)
-    val_dataloader = DataLoader(val_dataset, collate_fn=collate_fn, batch_size=args.batch_size)
+    train_dataloader = DataLoader(train_dataset, collate_fn=collate_fn, batch_size=args.batch_size, num_workers=args.number_of_workers, shuffle=True)
+    val_dataloader = DataLoader(val_dataset, collate_fn=collate_fn, num_workers=args.number_of_workers, batch_size=args.batch_size)
     categories = train_dataset.coco.cats
     id2label = {k: v['name'] for k, v in categories.items()}
 
@@ -98,6 +98,7 @@ if __name__ == '__main__':
     parser.add_argument('--max_steps', type=int, default=600)
     parser.add_argument('--gradient_clip_val', type=float, default=0.1)
     parser.add_argument('--output_dir', type=str, required=True, help="The path used to store the checkpoint.")
+    parser.add_argument('--number_of_workers', type=int, default=4)
     args = parser.parse_args()
     train_dataloader, val_dataset, val_dataloader, feature_extractor, id2label = initialize_dataloader(args)
 
