@@ -57,8 +57,8 @@ if __name__ == '__main__':
                         help="Folder that will contain the cropped images.")
     parser.add_argument('--crop_ratio', type=float, default=1.4,
                         help="Scale the bbox to crop larger or small area.")
-    parser.add_argument('--show_bbox', type=bool, default=False,
-                        help="Show bounding box on the cropped images.")
+    parser.add_argument('--show_bbox', default=False,
+                        action='store_true')
     parser.add_argument('--width_of_bbox', type=int, default=3,
                         help="Define the width of the bound of bounding boxes.")
     args = parser.parse_args()
