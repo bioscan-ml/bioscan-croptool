@@ -48,6 +48,11 @@ Note: for now, cropping is not working for MacOs, this issue may be solved latte
 in the terminal.
 Note that by setting  `--crop_ratio 1.4`, the cropped image is 1.4 scaled than the predicted boudning box. If you want to check the origional bounding box, you can add `--show_bbox` at the end of the command.
 
+If you want the cropped image in 4:3 ratio, you can add `--fix_ratio` to the command. Here is an example:
+```shell
+python scripts/crop_images.py --input_dir Part_2 --output_dir Part_2_cropped --checkpoint_path epoch=11-step=600_trained_on_part_1.ckpt --crop_ratio 1.4 --show_bbox --fix_ratio
+```
+
 
 # Acknowledgement
 This repo is built upon [Fine_tuning_DetrForObjectDetection_on_custom_dataset](https://github.com/NielsRogge/Transformers-Tutorials/blob/master/DETR/Fine_tuning_DetrForObjectDetection_on_custom_dataset_(balloon).ipynb).
