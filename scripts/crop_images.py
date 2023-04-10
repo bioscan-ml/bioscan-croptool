@@ -6,10 +6,49 @@ import numpy as np
 from tqdm import tqdm
 from transformers import DetrFeatureExtractor
 from PIL import Image, ImageDraw
+
 project_dir = dirname(dirname(abspath(__file__)))
 sys.path.append(project_dir)
 from model.detr import load_model_from_ckpt
 from util.visualize_and_process_bbox import get_bbox_from_output, scale_bbox
+
+
+def convert_black_pixels_to_white(image):
+    pixels = image.load()
+
+    # Loop through each pixel and replace black pixels with white
+    for i in range(image.size[0]):
+        for j in range(image.size[1]):
+            # Check if pixel is pure black
+            if pixels[i,j] == (0,0,0):
+                # Replace with pure white
+                pixels[i,j] = (255,255,255)
+    return image
+
+def rotate_image_and_bbox_if_necesscary(image, left, top, right, bottom):
+    image_size = image.size
+    image = image.rotate(90, expand=True)
+    new_left = top
+    new_right = bottom
+    new_bottom = image_size[0] - left
+    new_top = image_size[0] - right
+
+    return image, new_left, new_top, new_right, new_bottom
+
+
+def change_size_to_4_3(left, top, right, bottom):
+    width = right - left
+    height = bottom - top
+    if width < height / 3 * 4:
+        extend_length = height / 3 * 4 - width
+        left = left - extend_length / 2
+        right = right + extend_length - extend_length / 2
+
+    elif height < width / 4 * 3:
+        extend_length = width / 4 * 3 - height
+        top = top - extend_length / 2
+        bottom = bottom + extend_length - extend_length / 2
+    return left, top, right, bottom
 
 
 def crop_image(args, model, feature_extractor):
@@ -38,9 +77,28 @@ def crop_image(args, model, feature_extractor):
                 draw.rectangle((left, top, right, bottom), outline=(255, 0, 0), width=args.width_of_bbox)
             left, top, right, bottom = scale_bbox(args, left, top, right, bottom)
 
-
             image_size = image.size
-            cropped_img = image.crop((max(left, 0), max(top, 0), min(right, image_size[0]), min(bottom, image_size[1])))
+
+            if args.fix_ratio:
+                width = right - left
+                height = bottom - top
+
+                if height > width:
+                    image, left, top, right, bottom = rotate_image_and_bbox_if_necesscary(image, left, top, right,
+                                                                                          bottom)
+                    image_size = image.size
+
+                left, top, right, bottom = change_size_to_4_3(left, top, right, bottom)
+                left = round(left)
+                top = round(top)
+                right = round(right)
+                bottom = round(bottom)
+                # if left < 0 or top < 0 or right > image_size[0] or bottom > image_size[1]:
+                #     print("Please crop this image manually: " + f)
+
+            # cropped_img = image.crop((max(left, 0), max(top, 0), min(right, image_size[0]), min(bottom, image_size[1])))
+            cropped_img = image.crop((left, top, right, bottom))
+            cropped_img = convert_black_pixels_to_white(cropped_img)
 
             cropped_img.save(os.path.join(args.output_dir, filename))
 
@@ -61,6 +119,9 @@ if __name__ == '__main__':
                         action='store_true')
     parser.add_argument('--width_of_bbox', type=int, default=3,
                         help="Define the width of the bound of bounding boxes.")
+    parser.add_argument('--fix_ratio', default=False,
+                        action='store_true', help='Fix the ratio of the cropped image to 4:3')
+
     args = parser.parse_args()
     os.makedirs(args.output_dir, exist_ok=True)
 
