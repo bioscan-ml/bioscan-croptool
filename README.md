@@ -42,9 +42,16 @@ python scripts/visualization.py --data_dir data/insect --checkpoint_path insect_
 You can put the insect images that need to be cropped in a folder (Maybe call `original_images`), then type
 ```shell
 python scripts/crop_images.py --input_dir original_images --checkpoint_path insect_detection_ckpt/lightning_logs/version_0/checkpoints/epoch=11-step=300.ckpt --crop_ratio 1.4
+
+Note: for now, cropping is not working for MacOs, this issue may be solved latter by using different package to crop and save the image.
 ```
 in the terminal.
 Note that by setting  `--crop_ratio 1.4`, the cropped image is 1.4 scaled than the predicted boudning box. If you want to check the origional bounding box, you can add `--show_bbox` at the end of the command.
+
+If you want the cropped image in 4:3 ratio, you can add `--fix_ratio` to the command. Here is an example:
+```shell
+python scripts/crop_images.py --input_dir Part_2 --output_dir Part_2_cropped --checkpoint_path epoch=11-step=600_trained_on_part_1.ckpt --crop_ratio 1.4 --show_bbox --fix_ratio
+```
 
 
 # Acknowledgement
