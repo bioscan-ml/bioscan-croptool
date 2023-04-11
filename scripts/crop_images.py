@@ -5,7 +5,7 @@ from os.path import dirname, abspath
 import numpy as np
 from tqdm import tqdm
 from transformers import DetrFeatureExtractor
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageOps
 
 project_dir = dirname(dirname(abspath(__file__)))
 sys.path.append(project_dir)
@@ -13,17 +13,23 @@ from model.detr import load_model_from_ckpt
 from util.visualize_and_process_bbox import get_bbox_from_output, scale_bbox
 
 
-def convert_black_pixels_to_white(image):
-    pixels = image.load()
+def expand_image(image, size, direction):
+    border_color = (255, 255, 255)
+    border_image = None
+    if direction == 'left':
+        border_image = ImageOps.expand(image, border=(size, 0, 0, 0), fill=border_color)
+    elif direction == 'right':
+        border_image = ImageOps.expand(image, border=(0, size, 0, 0), fill=border_color)
+    elif direction == 'top':
+        border_image = ImageOps.expand(image, border=(0, 0, size, 0), fill=border_color)
+    elif direction == 'bottom':
+        border_image = ImageOps.expand(image, border=(0, 0, 0, size), fill=border_color)
+    else:
+        exit("Wrong expand direction.")
 
-    # Loop through each pixel and replace black pixels with white
-    for i in range(image.size[0]):
-        for j in range(image.size[1]):
-            # Check if pixel is pure black
-            if pixels[i,j] == (0,0,0):
-                # Replace with pure white
-                pixels[i,j] = (255,255,255)
-    return image
+    return border_image
+
+
 
 def rotate_image_and_bbox_if_necesscary(image, left, top, right, bottom):
     image_size = image.size
@@ -97,8 +103,32 @@ def crop_image(args, model, feature_extractor):
                 #     print("Please crop this image manually: " + f)
 
             # cropped_img = image.crop((max(left, 0), max(top, 0), min(right, image_size[0]), min(bottom, image_size[1])))
+
+            # Check if width is smaller than the bbox
+
+            if left < 0:
+                border_size = 0 - left
+                right = right - left
+                left = 0
+                image = expand_image(image, border_size, 'left')
+
+            if top < 0:
+                border_size = 0 - top
+                bottom = bottom - top
+                top = 0
+                image = expand_image(image, border_size, 'top')
+
+            if right > image.size[0]:
+                border_size = right - image.size[0] + 1
+                image = expand_image(image, border_size, 'right')
+
+            if bottom > image.size[1]:
+                border_size = bottom - image.size[1] + 1
+                image = expand_image(image, border_size, 'bottom')
+
+
             cropped_img = image.crop((left, top, right, bottom))
-            cropped_img = convert_black_pixels_to_white(cropped_img)
+
 
             cropped_img.save(os.path.join(args.output_dir, filename))
 
