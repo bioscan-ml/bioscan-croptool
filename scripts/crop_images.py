@@ -13,14 +13,14 @@ from model.detr import load_model_from_ckpt
 from util.visualize_and_process_bbox import get_bbox_from_output, scale_bbox
 
 
-def expand_image(image, size, direction):
-    border_color = (255, 255, 255)
+def expand_image(args, image, size, direction):
+    border_color = (args.background_color_R, args.background_color_G, args.background_color_B)
     border_image = None
     if direction == 'left':
         border_image = ImageOps.expand(image, border=(size, 0, 0, 0), fill=border_color)
-    elif direction == 'right':
-        border_image = ImageOps.expand(image, border=(0, size, 0, 0), fill=border_color)
     elif direction == 'top':
+        border_image = ImageOps.expand(image, border=(0, size,0 , 0), fill=border_color)
+    elif direction == 'right':
         border_image = ImageOps.expand(image, border=(0, 0, size, 0), fill=border_color)
     elif direction == 'bottom':
         border_image = ImageOps.expand(image, border=(0, 0, 0, size), fill=border_color)
@@ -110,21 +110,21 @@ def crop_image(args, model, feature_extractor):
                 border_size = 0 - left
                 right = right - left
                 left = 0
-                image = expand_image(image, border_size, 'left')
+                image = expand_image(args, image, border_size, 'left')
 
             if top < 0:
                 border_size = 0 - top
                 bottom = bottom - top
                 top = 0
-                image = expand_image(image, border_size, 'top')
+                image = expand_image(args, image, border_size, 'top')
 
             if right > image.size[0]:
                 border_size = right - image.size[0] + 1
-                image = expand_image(image, border_size, 'right')
+                image = expand_image(args, image, border_size, 'right')
 
             if bottom > image.size[1]:
                 border_size = bottom - image.size[1] + 1
-                image = expand_image(image, border_size, 'bottom')
+                image = expand_image(args, image, border_size, 'bottom')
 
 
             cropped_img = image.crop((left, top, right, bottom))
@@ -151,6 +151,13 @@ if __name__ == '__main__':
                         help="Define the width of the bound of bounding boxes.")
     parser.add_argument('--fix_ratio', default=False,
                         action='store_true', help='Fix the ratio of the cropped image to 4:3')
+    parser.add_argument('--background_color_R', type=int, default=234,
+                        help="Define the background color's R value.")
+    parser.add_argument('--background_color_G', type=int, default=242,
+                        help="Define the background color's G value.")
+    parser.add_argument('--background_color_B', type=int, default=245,
+                        help="Define the background color's B value.")
+
 
     args = parser.parse_args()
     os.makedirs(args.output_dir, exist_ok=True)
