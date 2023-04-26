@@ -14,7 +14,6 @@ def visualize_predictions(image, outputs, id2label, threshold=0.5):
     arg_max = probas_.argmax()
     probas_ = F.one_hot(arg_max, num_classes=len(probas_))
     keep = probas_ > threshold
-    # TODO remove the threshold
     # Rename the probas and probas_
 
     # convert predicted boxes from [0; 1] to image scales
@@ -65,7 +64,6 @@ def get_bbox_from_output(pred, image):
     probas_ = F.one_hot(arg_max, num_classes=len(probas_))
     keep = probas_ > 0.5
     bboxes_scaled = rescale_bboxes(pred.pred_boxes[0, keep].cpu(), image.size)
-    # TODO rename probas and probas_
     return bboxes_scaled[0]
 
 
