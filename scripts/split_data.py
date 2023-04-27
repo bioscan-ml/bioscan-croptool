@@ -35,7 +35,7 @@ def add_missing_information_to_coco_json(coco_annotation_dict):
 
 
 def split_data_and_copy_image(args):
-    coco_annotation_file = open(os.path.join(args.input_dir, "coco_annotations.json"))
+    coco_annotation_file = open(os.path.join(args.input_dir, "coco_annotations_processed.json"))
     coco_annotation_dict = json.load(coco_annotation_file)
     images, annotations, categories = coco_annotation_dict['images'], coco_annotation_dict['annotations'], coco_annotation_dict['categories']
     ids = []
