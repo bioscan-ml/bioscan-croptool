@@ -71,7 +71,6 @@ def crop_image(args, model, feature_extractor):
             except:
                 print("Image not found in: " + f)
                 exit(1)
-                # TODO: https://stackoverflow.com/questions/31751464/how-do-i-close-an-image-opened-in-pillow
             encoding = feature_extractor(images=image, return_tensors="pt")
             pixel_values = encoding["pixel_values"].squeeze().unsqueeze(0)
             outputs = model(pixel_values=pixel_values, pixel_mask=None)
