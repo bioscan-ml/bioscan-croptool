@@ -90,7 +90,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_dir', type=str, required=True,
                         help="path to the directory that contains the split data.")
-    parser.add_argument('--batch_size', type=str, default=8)
+    parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--learning_rate', type=float, default=1e-4)
     parser.add_argument('--lr_backbone', type=float, default=1e-5)
     parser.add_argument('--weight_decay', type=float, default=1e-4)

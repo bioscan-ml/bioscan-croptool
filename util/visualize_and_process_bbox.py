@@ -74,8 +74,13 @@ def scale_bbox(args, left, top, right, bottom):
     x_range = right - left
     y_range = bottom - top
 
-    x_change = x_range * args.crop_ratio - x_range
-    y_change = y_range * args.crop_ratio - y_range
+
+    if args.equal_extend:
+        x_change = y_change = (args.crop_ratio - 1)  * max(x_range, y_range)
+
+    else:
+        x_change = x_range * args.crop_ratio - x_range
+        y_change = y_range * args.crop_ratio - y_range
 
     left = int(left - x_change / 2)
     right = int(right + x_change / 2)

@@ -149,7 +149,9 @@ if __name__ == '__main__':
     parser.add_argument('--width_of_bbox', type=int, default=3,
                         help="Define the width of the bound of bounding boxes.")
     parser.add_argument('--fix_ratio', default=False,
-                        action='store_true', help='Fix the ratio of the cropped image to 4:3')
+                        action='store_true', help='Further extent the image to make the ratio in 4:3.')
+    parser.add_argument('--equal_extend', default=False,
+                        action='store_true', help='Extand equal size in both height and width.')
     parser.add_argument('--background_color_R', type=int, default=234,
                         help="Define the background color's R value.")
     parser.add_argument('--background_color_G', type=int, default=242,

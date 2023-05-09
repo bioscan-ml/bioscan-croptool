@@ -14,5 +14,5 @@ if __name__ == '__main__':
         f = os.path.join(args.input_dir, filename)
         # checking if it is a file
         img = Image.open(f)
-        img.thumbnail((4000, 4000), Image.ANTIALIAS)
+        img.thumbnail((1500, 1500), Image.ANTIALIAS)
         img.save(os.path.join(args.output_dir, "resized_" + filename), "JPEG")
