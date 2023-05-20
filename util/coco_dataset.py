@@ -27,3 +27,28 @@ class DetectionDataset(torchvision.datasets.CocoDetection):
         target = encoding["labels"][0]  # remove batch dimension
 
         return pixel_values, target
+
+def pillow_to_tensor(image):
+    tensor = transforms.ToTensor()(image).unsqueeze_(0)
+    return tensor
+#
+# def tensor_to_pillow(tensor):
+#     pillow = transforms.ToPILImage()(tensor.squeeze_(0))
+#     return pillow
+
+class CroppingDataset(Dataset):
+    """
+    A torch dataset that inherit from CocoDetection class.
+    """
+    def __init__(self, list_of_image_path):
+        self.list_of_image_path = list_of_image_path
+    def __len__(self):
+        return len(self.list_of_image_path)
+    def __getitem__(self, idx):
+        """
+        :return: pixel_values
+        """
+        # read in PIL image and target in COCO format
+        path_to_image = self.list_of_image_path[idx]
+
+        return path_to_image

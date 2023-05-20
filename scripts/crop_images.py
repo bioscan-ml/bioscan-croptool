@@ -88,7 +88,7 @@ def crop_image(args, model, feature_extractor):
                 width = right - left
                 height = bottom - top
 
-                if height > width:
+                if height > width and args.rotate_image:
                     image, left, top, right, bottom = rotate_image_and_bbox_if_necesscary(image, left, top, right,
                                                                                           bottom)
                     image_size = image.size
@@ -152,12 +152,15 @@ if __name__ == '__main__':
                         action='store_true', help='Further extent the image to make the ratio in 4:3.')
     parser.add_argument('--equal_extend', default=False,
                         action='store_true', help='Extand equal size in both height and width.')
+    parser.add_argument('--rotate_image', default=False,
+                        action='store_true', help='Rotate the insect to fit 4:3 naturally.')
     parser.add_argument('--background_color_R', type=int, default=234,
                         help="Define the background color's R value.")
     parser.add_argument('--background_color_G', type=int, default=242,
                         help="Define the background color's G value.")
     parser.add_argument('--background_color_B', type=int, default=245,
                         help="Define the background color's B value.")
+
 
 
     args = parser.parse_args()

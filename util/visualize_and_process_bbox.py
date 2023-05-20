@@ -58,12 +58,28 @@ def get_bbox_from_output(pred, image):
     Extract bounding boxes from the model's output.
     Note that this function will keep the bounding box with the highest confidence and discard others.
     """
+
     probas = pred.logits.softmax(-1)[0, :, :-1]
     probas_ = probas.max(-1).values
     arg_max = probas_.argmax()
     probas_ = F.one_hot(arg_max, num_classes=len(probas_))
     keep = probas_ > 0.5
     bboxes_scaled = rescale_bboxes(pred.pred_boxes[0, keep].cpu(), image.size)
+    return bboxes_scaled[0]
+
+def get_bbox_from_output_for_batch_version(pred_logits, pred_pred_boxes, image_size):
+    """
+    Extract bounding boxes from the model's output.
+    Note that this function will keep the bounding box with the highest confidence and discard others.
+    """
+
+    probas = pred_logits.softmax(-1)[0, :, :-1]
+    probas_ = probas.max(-1).values
+    arg_max = probas_.argmax()
+    probas_ = F.one_hot(arg_max, num_classes=len(probas_))
+    keep = probas_ > 0.5
+    bboxes_scaled = rescale_bboxes(pred_pred_boxes[0, keep].cpu(), image_size)
+    # TODO rename probas and probas_
     return bboxes_scaled[0]
 
 
