@@ -13,22 +13,21 @@ pip install -r requirements.txt
 ```
 in the terminal. However, based on your GPU version, you may have to modify the torch version and install other packages manually in difference version.
 # Data preparation
-Please download the annotated data and images from https://drive.google.com/file/d/1UdYd99MKRyvqirdAssV8Ds4dkfhXjtW3/view?usp=sharing. Then unzip it in `/data`.
+Please download the annotated data and images from [https://drive.google.com/file/d/1UdYd99MKRyvqirdAssV8Ds4dkfhXjtW3/view?usp=sharing](https://drive.google.com/file/d/1l85yzLJ5M6aFT5CAtP8J2rY_tW0aDUxt/view?usp=sharing). Then unzip it in `/data`.
 You can split and prepare the data by
 ```shell
 python scripts/complete_coco_json.py --input_dir data/100_Rig_Images
 python scripts/split_data.py --input_dir data/100_Rig_Images --dataset_name data/insect
 ```
 If you want to annotate more data for the training part, you can check Toronto Annotation suite(https://aidemos.cs.toronto.edu/toras).
-Note that some of the information is missing from their coco annotation file, that is wht the `complete_coco_json.py` exist. (However, this scripts use boudning box area to replace the mask area, but it is not affecting the cropping tool too much).
+Note that some of the information is missing from their coco annotation file, that is why the `complete_coco_json.py` exist. (However, this scripts use boudning box area to replace the mask area, but it is not affecting the cropping tool too much).
 
-Update: Here is a processed dataset with more annotated images, you can unzip it in `/data` to use: https://drive.google.com/file/d/1DVEVBh0P9utTrbsNu0xNI_Ogbk1b9vgj/view?usp=sharing
 
 # Train and eval
 ```shell
 python scripts/train.py --data_dir data/insect --output_dir insect_detection_ckpt
 ```
-Here is a checkpoint for you to use, so you can skip this step. (https://drive.google.com/file/d/1vyDxXHZkUIKl9TVa7fLkrnC_khW86yUf/view?usp=sharing)
+Here is a checkpoint for you to use, so you can skip this step. (**https://drive.google.com/file/d/1vyDxXHZkUIKl9TVa7fLkrnC_khW86yUf/view?usp=sharing**)
 If you want to use it, you can put it into your project folder ,and change the `checkpoint_path` in following commands. (To `--checkpoint_path epoch=11-step=300.ckpt`)
 
 # Evaluation
