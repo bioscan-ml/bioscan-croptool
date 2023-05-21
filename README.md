@@ -16,8 +16,8 @@ in the terminal. However, based on your GPU version, you may have to modify the 
 Please download the annotated data and images from [https://drive.google.com/file/d/1UdYd99MKRyvqirdAssV8Ds4dkfhXjtW3/view?usp=sharing](https://drive.google.com/file/d/1l85yzLJ5M6aFT5CAtP8J2rY_tW0aDUxt/view?usp=sharing). Then unzip it in `/data`.
 You can split and prepare the data by
 ```shell
-python scripts/complete_coco_json.py --input_dir data/100_Rig_Images
-python scripts/split_data.py --input_dir data/100_Rig_Images --dataset_name data/insect
+python scripts/complete_coco_json.py --input_dir data/BIOUG_1k_images_resized
+python scripts/split_data.py --input_dir data/BIOUG_1k_images_resized --dataset_name data/insect
 ```
 If you want to annotate more data for the training part, you can check Toronto Annotation suite(https://aidemos.cs.toronto.edu/toras).
 Note that some of the information is missing from their coco annotation file, that is why the `complete_coco_json.py` exist. (However, this scripts use boudning box area to replace the mask area, but it is not affecting the cropping tool too much).
