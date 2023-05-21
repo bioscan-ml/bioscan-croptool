@@ -49,7 +49,7 @@ python scripts/crop_images.py --input_dir original_images --checkpoint_path inse
 in the terminal.
 Note that by setting  `--crop_ratio 1.4`, the cropped image is 1.4 scaled than the predicted boudning box. If you want to check the origional bounding box, you can add `--show_bbox` at the end of the command.
 
-Here is a checkpoint for you to use, so you can skip the training. (https://drive.google.com/file/d/1vyDxXHZkUIKl9TVa7fLkrnC_khW86yUf/view?usp=sharing)
+Here is a checkpoint for you to use, so you can skip the training. 'wget https://aspis.cmpt.sfu.ca/projects/bioscan/ckpt_for_pined_images.ckpt'
 If you want to use it, you can put it into your project folder ,and change the `checkpoint_path` in following commands. (To `--checkpoint_path ckpt_for_pined_images.ckpt`)
 
 If you want the cropped image in 4:3 ratio, you can add `--fix_ratio` to the command. Here is an example:
