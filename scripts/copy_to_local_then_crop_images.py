@@ -16,15 +16,12 @@ from util.visualize_and_process_bbox import get_bbox_from_output, scale_bbox
 """
 This is a special one time script for special purpose,  will be removed from the repo after the task is done.
 """
-import tarfile
+
 
 def unzip_tars_to_folder(path_to_tar, path_to_unzipped_folder):
 
     # open file
-    file = tarfile.open(path_to_tar)
-
-    # extracting file
-    file.extractall(path_to_unzipped_folder)
+    os.system('tar -xvf ' + path_to_tar + ' --strip=7 -C ' + path_to_unzipped_folder)
 
     file.close()
 
@@ -259,8 +256,9 @@ if __name__ == '__main__':
         src_tar_path = os.path.join(args.remote_input_dir, tarfile_name)
         target_tar_path = os.path.join(args.local_input_dir, tarfile_name)
         if not os.path.exists(target_tar_path):
-            shutil.copytree(src_tar_path, target_tar_path)
+            shutil.copyfile(src_tar_path, target_tar_path)
         folder_name = tarfile_name.replace(".tar", "")
+        os.makedirs(target_folder_path, exist_ok=True)
         unzip_tars_to_folder(target_tar_path, target_folder_path)
         os.remove(target_tar_path)
 
@@ -279,4 +277,4 @@ if __name__ == '__main__':
         shutil.copytree(os.path.join(args.local_output_dir, folder_name),
                         os.path.join(args.remote_output_dir, folder_name))
 
-    shutil.rmtree(os.path.join(args.local_input_dir))
+    # shutil.rmtree(os.path.join(args.local_input_dir))
