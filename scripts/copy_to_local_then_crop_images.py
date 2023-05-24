@@ -247,7 +247,7 @@ if __name__ == '__main__':
 
     pbar = tqdm(image_tar_names)
     for tarfile_name in pbar:
-        pbar.set_description("Copying image tars")
+        pbar.set_description("Copying, unzipping, cropping")
         folder_name = tarfile_name.replace(".tar", "")
         image_folder_names.append(folder_name)
         target_folder_path = os.path.join(args.local_input_dir, folder_name)
@@ -255,20 +255,26 @@ if __name__ == '__main__':
             continue
         src_tar_path = os.path.join(args.remote_input_dir, tarfile_name)
         target_tar_path = os.path.join(args.local_input_dir, tarfile_name)
+
+        # Copy tar
         if not os.path.exists(target_tar_path):
             shutil.copyfile(src_tar_path, target_tar_path)
+
+
         folder_name = tarfile_name.replace(".tar", "")
         os.makedirs(target_folder_path, exist_ok=True)
+
+        # unzip tar
+
         unzip_tars_to_folder(target_tar_path, target_folder_path)
         os.remove(target_tar_path)
 
+        # cropping
 
-    pbar = tqdm(image_folder_names)
-    for folder_name in pbar:
-        pbar.set_description("Cropping for each folder")
         args.input_dir = os.path.join(args.local_input_dir, folder_name)
         args.current_image_folder_name = folder_name
         crop_image(args, model, feature_extractor)
+        shutil.rmtree(os.path.join(args.local_input_dir, folder_name))
 
     pbar = tqdm(os.listdir(args.local_output_dir))
     for folder_name in pbar:
@@ -277,4 +283,4 @@ if __name__ == '__main__':
         shutil.copytree(os.path.join(args.local_output_dir, folder_name),
                         os.path.join(args.remote_output_dir, folder_name))
 
-    shutil.rmtree(os.path.join(args.local_input_dir))
+
