@@ -97,9 +97,9 @@ def crop_image(args, model, feature_extractor):
     """
 
     list_of_un_cropped_images = []
-    path_to_cropped_folder = os.path.join(args.local_output_dir, "CROPPED_" + args.current_image_folder_name)
+    path_to_cropped_folder = os.path.join(args.local_output_dir, "cropped_" + args.current_image_folder_name)
     path_to_cropped_and_resized_folder = os.path.join(args.local_output_dir,
-                                                      "CROPPED_RESIZED_" + args.current_image_folder_name)
+                                                      "cropped_resized_" + args.current_image_folder_name)
 
     os.makedirs(path_to_cropped_folder, exist_ok=True)
     os.makedirs(path_to_cropped_and_resized_folder, exist_ok=True)
@@ -109,8 +109,8 @@ def crop_image(args, model, feature_extractor):
     pbar_in_crop_image = tqdm(os.listdir(args.input_dir))
     for filename in pbar_in_crop_image:
         pbar_in_crop_image.set_description("Checking the un-cropped images.")
-        name_of_cropped_image = "CROPPED_" + filename
-        name_of_cropped_and_resized_image = "CROPPED_RESIZED_" + filename
+        name_of_cropped_image = "cropped_" + filename
+        name_of_cropped_and_resized_image = "cropped_resized_" + filename
         if name_of_cropped_image not in list_of_cropped_images or name_of_cropped_and_resized_image not in list_of_cropped_and_resized_images:
             list_of_un_cropped_images.append(filename)
     pbar_in_crop_image = tqdm(list_of_un_cropped_images)
@@ -179,12 +179,12 @@ def crop_image(args, model, feature_extractor):
 
             cropped_img = image.crop((left, top, right, bottom))
 
-            cropped_img.save(os.path.join(path_to_cropped_folder, "CROPPED_" + filename))
+            cropped_img.save(os.path.join(path_to_cropped_folder, "cropped_" + filename))
             if args.save_resized:
                 new_width, new_height = get_size_with_aspect_ratio(image.size, 256)
                 cropped_and_resized_img = cropped_img.resize((new_width, new_height))
                 cropped_and_resized_img.save(os.path.join(path_to_cropped_and_resized_folder,
-                                                          "CROPPED_RESIZED_" + filename))
+                                                          "cropped_resized_" + filename))
 
 
 if __name__ == '__main__':
