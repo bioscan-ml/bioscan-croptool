@@ -191,7 +191,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # parser.add_argument('--input_dir', type=str, required=True,
     #                     help="Folder that contains the original images.")
-    parser.add_argument('--input_txt', type=str, default="list_of_image_folder.txt",
+    parser.add_argument('--input_txt', type=str, required=True,
                         help="Path to the txt file that contains the names of tar files you want to download to local."
                              "storage.")
     parser.add_argument('--remote_input_dir', type=str, required=True,
