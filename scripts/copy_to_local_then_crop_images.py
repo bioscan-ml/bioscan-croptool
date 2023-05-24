@@ -277,4 +277,4 @@ if __name__ == '__main__':
         shutil.copytree(os.path.join(args.local_output_dir, folder_name),
                         os.path.join(args.remote_output_dir, folder_name))
 
-    # shutil.rmtree(os.path.join(args.local_input_dir))
+    shutil.rmtree(os.path.join(args.local_input_dir))
