@@ -124,7 +124,9 @@ def crop_image(args, model, feature_extractor, device):
             encoding = feature_extractor(images=image, return_tensors="pt").to(device)
             pixel_values = encoding["pixel_values"].squeeze().unsqueeze(0)
             outputs = model(pixel_values=pixel_values, pixel_mask=None)
-            bbox = get_bbox_from_output(outputs, image).detach().numpy()
+            pred_logit = outputs.logits[0]
+            pred_boxes = outputs.pred_boxes[0]
+            bbox = get_bbox_from_output(pred_logit, pred_boxes, image).detach().numpy()
             bbox = np.round(bbox, 0)
             left, top, right, bottom = bbox[0], bbox[1], bbox[2], bbox[3]
             if args.show_bbox:
@@ -255,23 +257,15 @@ if __name__ == '__main__':
         folder_name = tarfile_name.replace(".tar", "")
         image_folder_names.append(folder_name)
         target_folder_path = os.path.join(args.local_input_dir, folder_name)
-        if os.path.exists(target_folder_path):
-            continue
         src_tar_path = os.path.join(args.remote_input_dir, tarfile_name)
         target_tar_path = os.path.join(args.local_input_dir, tarfile_name)
 
-        # Copy tar
-        if not os.path.exists(target_tar_path):
-            shutil.copyfile(src_tar_path, target_tar_path)
-
-
-        folder_name = tarfile_name.replace(".tar", "")
-        os.makedirs(target_folder_path, exist_ok=True)
-
-        # unzip tar
-
-        unzip_tars_to_folder(target_tar_path, target_folder_path)
-        os.remove(target_tar_path)
+        if not os.path.exists(target_folder_path):
+            os.makedirs(target_folder_path, exist_ok=True)
+            if not os.path.exists(target_tar_path):
+                shutil.copyfile(src_tar_path, target_tar_path)
+                unzip_tars_to_folder(target_tar_path, target_folder_path)
+                os.remove(target_tar_path)
 
         # cropping
 

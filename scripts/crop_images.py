@@ -3,15 +3,17 @@ import os
 import sys
 from os.path import dirname, abspath
 import numpy as np
-import torch
+import torch.cuda
 from tqdm import tqdm
 from transformers import DetrFeatureExtractor
 from PIL import Image, ImageDraw, ImageOps
+import torchvision.transforms as T
 
 project_dir = dirname(dirname(abspath(__file__)))
 sys.path.append(project_dir)
 from model.detr import load_model_from_ckpt
 from util.visualize_and_process_bbox import get_bbox_from_output, scale_bbox
+from util.loader_for_cropping import init_loader_with_folder_name_and_list_of_images
 
 
 def expand_image(args, image, size, direction):
@@ -20,7 +22,7 @@ def expand_image(args, image, size, direction):
     if direction == 'left':
         border_image = ImageOps.expand(image, border=(size, 0, 0, 0), fill=border_color)
     elif direction == 'top':
-        border_image = ImageOps.expand(image, border=(0, size,0 , 0), fill=border_color)
+        border_image = ImageOps.expand(image, border=(0, size, 0, 0), fill=border_color)
     elif direction == 'right':
         border_image = ImageOps.expand(image, border=(0, 0, size, 0), fill=border_color)
     elif direction == 'bottom':
@@ -29,7 +31,6 @@ def expand_image(args, image, size, direction):
         exit("Wrong expand direction.")
 
     return border_image
-
 
 
 def rotate_image_and_bbox_if_necesscary(image, left, top, right, bottom):
@@ -58,25 +59,24 @@ def change_size_to_4_3(left, top, right, bottom):
     return left, top, right, bottom
 
 
-def crop_image(args, model, feature_extractor, device):
+def crop_image(args, model, image_loader, feature_extractor, device):
     """
     Crop and save images based on the predicted bounding boxes from the model.
     :param model: Detr model that loaded from the checkpoint.
     :param feature_extractor: A ResNet50 model as a standard image extractor.
     """
-    for filename in tqdm(os.listdir(args.input_dir)):
-        f = os.path.join(args.input_dir, filename)
-        if os.path.isfile(f):
-            try:
-                image = Image.open(f)
-            except:
-                print("Image not found in: " + f)
-                exit(1)
-            encoding = feature_extractor(images=image, return_tensors="pt").to(device)
-            pixel_values = encoding["pixel_values"].squeeze().unsqueeze(0)
-            outputs = model(pixel_values=pixel_values, pixel_mask=None)
-            bbox = get_bbox_from_output(outputs, image).detach().numpy()
-            bbox = np.round(bbox, 0)
+    to_pil_image = T.ToPILImage()
+
+    for images, list_of_file_name in tqdm(image_loader):
+        list_of_image_tensor = [image for image in images]
+        encoding = feature_extractor(images=list_of_image_tensor, return_tensors="pt").to(device)
+        pixel_values = encoding["pixel_values"]
+        outputs = model(pixel_values=pixel_values, pixel_mask=None)
+        for index, image_tensor in enumerate(list_of_image_tensor):
+            pred_logit = outputs.logits[index]
+            pred_boxes = outputs.pred_boxes[index]
+            image = to_pil_image(image_tensor)
+            bbox = get_bbox_from_output(pred_logit, pred_boxes, image).detach().numpy()
             left, top, right, bottom = bbox[0], bbox[1], bbox[2], bbox[3]
             if args.show_bbox:
                 draw = ImageDraw.Draw(image)
@@ -126,10 +126,8 @@ def crop_image(args, model, feature_extractor, device):
                 border_size = bottom - image.size[1] + 1
                 image = expand_image(args, image, border_size, 'bottom')
 
-
             cropped_img = image.crop((left, top, right, bottom))
-
-
+            filename = list_of_file_name[index]
             cropped_img.save(os.path.join(args.output_dir, filename))
 
 
@@ -151,7 +149,7 @@ if __name__ == '__main__':
                         help="Define the width of the bound of bounding boxes.")
     parser.add_argument('--fix_ratio', default=False,
                         action='store_true', help='Further extent the image to make the ratio in 4:3.')
-    parser.add_argument('--equal_extend', default=False,
+    parser.add_argument('--equal_extend', default=True,
                         action='store_true', help='Extand equal size in both height and width.')
     parser.add_argument('--rotate_image', default=False,
                         action='store_true', help='Rotate the insect to fit 4:3 naturally.')
@@ -162,9 +160,10 @@ if __name__ == '__main__':
     parser.add_argument('--background_color_B', type=int, default=245,
                         help="Define the background color's B value.")
 
-
-
     args = parser.parse_args()
+
+    image_loader = init_loader_with_folder_name_and_list_of_images(args.input_dir, args.batch_size)
+
     os.makedirs(args.output_dir, exist_ok=True)
 
     feature_extractor = DetrFeatureExtractor.from_pretrained("facebook/detr-resnet-50")
@@ -175,4 +174,4 @@ if __name__ == '__main__':
 
     model.to(device)
 
-    crop_image(args, model, feature_extractor, device)
+    crop_image(args, model, image_loader, feature_extractor, device)

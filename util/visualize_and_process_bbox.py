@@ -53,18 +53,17 @@ def plot_results(pil_img, prob, boxes, id2label):
     plt.show()
 
 
-def get_bbox_from_output(pred, image):
+def get_bbox_from_output(pred_logit, pred_pred_boxes, image):
     """
     Extract bounding boxes from the model's output.
     Note that this function will keep the bounding box with the highest confidence and discard others.
     """
-
-    probas = pred.logits.softmax(-1)[0, :, :-1]
+    probas = pred_logit.softmax(-1)[:, :-1]
     probas_ = probas.max(-1).values
     arg_max = probas_.argmax()
     probas_ = F.one_hot(arg_max, num_classes=len(probas_))
     keep = probas_ > 0.5
-    bboxes_scaled = rescale_bboxes(pred.pred_boxes[0, keep].cpu(), image.size)
+    bboxes_scaled = rescale_bboxes(pred_pred_boxes[keep].cpu(), image.size)
     return bboxes_scaled[0]
 
 def get_bbox_from_output_for_batch_version(pred_logits, pred_pred_boxes, image_size):
