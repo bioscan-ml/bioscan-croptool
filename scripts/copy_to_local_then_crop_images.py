@@ -3,6 +3,7 @@ import os
 import sys
 from os.path import dirname, abspath
 import numpy as np
+import torch
 from tqdm import tqdm
 from transformers import DetrFeatureExtractor
 from PIL import Image, ImageDraw, ImageOps
@@ -86,7 +87,7 @@ def change_size_to_4_3(left, top, right, bottom):
     return left, top, right, bottom
 
 
-def crop_image(args, model, feature_extractor):
+def crop_image(args, model, feature_extractor, device):
     """
     Crop and save images based on the predicted bounding boxes from the model.
     :param model: Detr model that loaded from the checkpoint.
@@ -120,7 +121,7 @@ def crop_image(args, model, feature_extractor):
             except:
                 print("Image not found in: " + f)
                 exit(1)
-            encoding = feature_extractor(images=image, return_tensors="pt")
+            encoding = feature_extractor(images=image, return_tensors="pt").to(device)
             pixel_values = encoding["pixel_values"].squeeze().unsqueeze(0)
             outputs = model(pixel_values=pixel_values, pixel_mask=None)
             bbox = get_bbox_from_output(outputs, image).detach().numpy()
@@ -231,6 +232,9 @@ if __name__ == '__main__':
 
     model = load_model_from_ckpt(args)
 
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.to(device)
+
     os.makedirs(args.local_input_dir, exist_ok=True)
     os.makedirs(args.local_output_dir, exist_ok=True)
 
@@ -273,11 +277,9 @@ if __name__ == '__main__':
 
         args.input_dir = os.path.join(args.local_input_dir, folder_name)
         args.current_image_folder_name = folder_name
-        crop_image(args, model, feature_extractor)
+        crop_image(args, model, feature_extractor, device)
         shutil.rmtree(os.path.join(args.local_input_dir, folder_name))
 
-    pbar = tqdm(os.listdir(args.local_output_dir))
-    for folder_name in pbar:
         if os.path.exists(os.path.join(args.remote_output_dir, folder_name)):
             shutil.rmtree(os.path.join(args.remote_output_dir, folder_name))
         shutil.copytree(os.path.join(args.local_output_dir, folder_name),
