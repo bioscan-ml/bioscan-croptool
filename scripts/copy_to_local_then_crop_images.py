@@ -32,7 +32,7 @@ def get_size_with_aspect_ratio(image_size, size):
     w, h = image_size
 
     if (w <= h and w == size) or (h <= w and h == size):
-        return (h, w)
+        return w, h
 
     if w < h:
         ow = size
@@ -181,7 +181,7 @@ def crop_image(args, model, feature_extractor, device):
 
             cropped_img.save(os.path.join(path_to_cropped_folder, "cropped_" + filename))
             if args.save_resized:
-                new_width, new_height = get_size_with_aspect_ratio(image.size, 256)
+                new_width, new_height = get_size_with_aspect_ratio(cropped_img.size, 256)
                 cropped_and_resized_img = cropped_img.resize((new_width, new_height))
                 cropped_and_resized_img.save(os.path.join(path_to_cropped_and_resized_folder,
                                                           "cropped_resized_" + filename))
