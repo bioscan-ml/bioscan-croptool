@@ -22,7 +22,8 @@ This is a special one time script for special purpose,  will be removed from the
 def unzip_tars_to_folder(path_to_tar, path_to_unzipped_folder):
 
     # open file
-    os.system('tar -xvf ' + path_to_tar + ' --strip=7 -C ' + path_to_unzipped_folder)
+
+    os.system("tar -xvf " + path_to_tar + " --wildcards --transform 's|.*/||' -C " + path_to_unzipped_folder)
 
     file.close()
 

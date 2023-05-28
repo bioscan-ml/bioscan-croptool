@@ -16,7 +16,7 @@ def save_single_image(image, image_name, hdf5):
     # Read the binary data from the BytesIO object
     binary_data = binary_data_io.getvalue()
     binary_data_np = np.frombuffer(binary_data, dtype=np.uint8)
-    dataset.create_dataset(f"CROPPED_{image_name}", data=binary_data_np)
+    dataset.create_dataset(image_name, data=binary_data_np)
 
 
 def make_hdf5(path='', data_typ=''):
