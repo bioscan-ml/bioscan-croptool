@@ -137,7 +137,7 @@ if __name__ == '__main__':
                         help="Folder that contains the original images.")
     parser.add_argument('--checkpoint_path', type=str, required=True,
                         help="Path to the checkpoint.")
-    parser.add_argument('--batch_size', type=int, default=4,
+    parser.add_argument('--batch_size', type=int, default=1,
                         help="Number of images in each batch.")
     parser.add_argument('--output_dir', type=str, default="cropped_image",
                         help="Folder that will contain the cropped images.")
