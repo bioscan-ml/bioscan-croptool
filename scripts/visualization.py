@@ -1,12 +1,10 @@
 import argparse
-import os
 from PIL import Image
+import os
+import sys
 from transformers import DetrFeatureExtractor
 from crop_images import load_model_from_ckpt
-from os.path import dirname, abspath
-import sys
-project_dir = dirname(dirname(abspath(__file__)))
-sys.path.append(project_dir)
+from project_path import project_dir
 from util.coco_dataset import DetectionDataset
 from util.visualize_and_process_bbox import visualize_predictions
 

@@ -1,14 +1,12 @@
 import argparse
-import os
-import sys
-from os.path import dirname, abspath
 import torch
 from pytorch_lightning import Trainer
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+import os
+import sys
 from transformers import DetrFeatureExtractor
-project_dir = dirname(dirname(abspath(__file__)))
-sys.path.append(project_dir)
+from project_path import project_dir
 from util.evaluation_support import prepare_for_evaluation
 from util.coco_dataset import DetectionDataset
 from model.detr import Detr, load_model_from_ckpt

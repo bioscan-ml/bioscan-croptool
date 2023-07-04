@@ -1,16 +1,13 @@
 import argparse
-import os
-import sys
-from os.path import dirname, abspath
 import numpy as np
 import torch.cuda
+import os
+import sys
 from tqdm import tqdm
 from transformers import DetrFeatureExtractor
 from PIL import Image, ImageDraw, ImageOps
 import torchvision.transforms as T
-
-project_dir = dirname(dirname(abspath(__file__)))
-sys.path.append(project_dir)
+from project_path import project_dir
 from model.detr import load_model_from_ckpt
 from util.visualize_and_process_bbox import get_bbox_from_output, scale_bbox
 from util.loader_for_cropping import init_loader_with_folder_name_and_list_of_images
