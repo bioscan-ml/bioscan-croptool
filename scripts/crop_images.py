@@ -8,6 +8,7 @@ from tqdm import tqdm
 from transformers import DetrFeatureExtractor
 from PIL import Image, ImageDraw, ImageOps
 import torchvision.transforms as T
+import json
 
 project_dir = dirname(dirname(abspath(__file__)))
 sys.path.append(project_dir)
@@ -66,7 +67,7 @@ def crop_image(args, model, image_loader, feature_extractor, device):
     :param feature_extractor: A ResNet50 model as a standard image extractor.
     """
     to_pil_image = T.ToPILImage()
-
+    list_of_original_image_size_and_bbox = []
     for images, list_of_file_name in tqdm(image_loader):
         list_of_image_tensor = [image for image in images]
         encoding = feature_extractor(images=list_of_image_tensor, return_tensors="pt").to(device)
@@ -85,6 +86,7 @@ def crop_image(args, model, image_loader, feature_extractor, device):
 
             image_size = image.size
 
+            list_of_original_image_size_and_bbox.append({'filename': list_of_file_name[index], 'original_size': image_size, 'bbox': bbox.tolist()})
             if args.fix_ratio:
                 width = right - left
                 height = bottom - top
@@ -129,6 +131,9 @@ def crop_image(args, model, image_loader, feature_extractor, device):
             cropped_img = image.crop((left, top, right, bottom))
             filename = list_of_file_name[index]
             cropped_img.save(os.path.join(args.output_dir, filename))
+    with open(os.path.join(args.output_dir, 'size_of_original_image_and_bbox.json'), 'w') as file:
+        json.dump(list_of_original_image_size_and_bbox, file)
+
 
 
 if __name__ == '__main__':
@@ -137,7 +142,7 @@ if __name__ == '__main__':
                         help="Folder that contains the original images.")
     parser.add_argument('--checkpoint_path', type=str, required=True,
                         help="Path to the checkpoint.")
-    parser.add_argument('--batch_size', type=int, default=4,
+    parser.add_argument('--batch_size', type=int, default=1,
                         help="Number of images in each batch.")
     parser.add_argument('--output_dir', type=str, default="cropped_image",
                         help="Folder that will contain the cropped images.")
@@ -159,6 +164,7 @@ if __name__ == '__main__':
                         help="Define the background color's G value.")
     parser.add_argument('--background_color_B', type=int, default=245,
                         help="Define the background color's B value.")
+
 
     args = parser.parse_args()
 
