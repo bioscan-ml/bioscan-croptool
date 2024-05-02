@@ -11,7 +11,9 @@ from util.evaluation_support import prepare_for_evaluation
 from util.coco_dataset import DetectionDataset
 from model.detr import Detr
 from coco_eval import CocoEvaluator
+import warnings
 
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 def collate_fn(batch):
     feature_extractor = DetrFeatureExtractor.from_pretrained("facebook/detr-resnet-50")
@@ -44,17 +46,23 @@ def initialize_dataloader(args):
 
 
 def initialize_model(args, train_dataloader, val_dataloader):
-    return Detr(lr=args.learning_rate, lr_backbone=args.lr_backbone, weight_decay=args.weight_decay,
-                train_dataloader=train_dataloader, val_dataloader=val_dataloader)
 
+    if args.checkpoint_path is not None:
+        model = Detr.load_from_checkpoint(lr=1e-4, lr_backbone=1e-5, weight_decay=1e-4,
+                                          checkpoint_path=args.checkpoint_path)
+    else:
+        model = Detr(lr=args.learning_rate, lr_backbone=args.lr_backbone, weight_decay=args.weight_decay,
+                     train_dataloader=train_dataloader, val_dataloader=val_dataloader)
 
-def initialize_trainer(args):
+    return model
+
+def initialize_trainer(args, logger=None):
     if not torch.cuda.is_available():
         return Trainer(gpus=0, max_steps=args.max_steps, gradient_clip_val=args.gradient_clip_val,
-                       default_root_dir=args.output_dir)
+                       default_root_dir=args.output_dir, logger=logger)
     else:
         return Trainer(gpus=args.gpus, max_steps=args.max_steps, gradient_clip_val=args.gradient_clip_val,
-                       default_root_dir=args.output_dir, accelerator="auto")
+                       default_root_dir=args.output_dir, accelerator="auto", logger=logger)
 
 
 def evaluation(model, val_dataset, val_dataloader, feature_extractor):
@@ -98,6 +106,8 @@ if __name__ == '__main__':
     parser.add_argument('--gradient_clip_val', type=float, default=0.1)
     parser.add_argument('--output_dir', type=str, required=True, help="The path used to store the checkpoint.")
     parser.add_argument('--number_of_workers', type=int, default=4)
+    parser.add_argument('--checkpoint_path', type=str, default=None,
+                        help="Path to the checkpoint.")
     args = parser.parse_args()
     train_dataloader, val_dataset, val_dataloader, feature_extractor, id2label = initialize_dataloader(args)
 

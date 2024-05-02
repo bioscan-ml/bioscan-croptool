@@ -11,6 +11,7 @@ from project_path import project_dir
 from model.detr import load_model_from_ckpt
 from util.visualize_and_process_bbox import get_bbox_from_output, scale_bbox
 from util.loader_for_cropping import init_loader_with_folder_name_and_list_of_images
+import json
 
 
 def expand_image(args, image, size, direction):
@@ -163,6 +164,9 @@ if __name__ == '__main__':
 
 
     args = parser.parse_args()
+
+
+
 
     image_loader = init_loader_with_folder_name_and_list_of_images(args.input_dir, args.batch_size)
 

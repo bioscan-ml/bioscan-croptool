@@ -34,15 +34,35 @@ def add_missing_information_to_coco_json(coco_annotation_dict):
     return images, annotations
 
 
+
+def remove_empty_annonations(coco_annotation_dict):
+    images, annotations, categories = coco_annotation_dict['images'], coco_annotation_dict['annotations'], \
+    coco_annotation_dict['categories']
+
+    annotations = annotations[0: len(images)]
+
+    for idx, ann in enumerate(annotations):
+        if ann['area'] == 0:
+            images.pop(idx)
+            annotations.pop(idx)
+
+    for idx, ann in enumerate(annotations):
+        ann['id'] = idx
+        ann['image_id'] = idx
+        images[idx]['id'] = idx
+
+    return images, annotations, categories
+
+
 def split_data_and_copy_image(args):
     coco_annotation_file = open(os.path.join(args.input_dir, "coco_annotations_processed.json"))
     coco_annotation_dict = json.load(coco_annotation_file)
-    images, annotations, categories = coco_annotation_dict['images'], coco_annotation_dict['annotations'], coco_annotation_dict['categories']
+    images, annotations, categories = remove_empty_annonations(coco_annotation_dict)
     ids = []
     for i in images:
         ids.append(i['id'])
 
-    train_ids, val_ids = train_test_split(ids, test_size=0.5)
+    train_ids, val_ids = train_test_split(ids, test_size=0.1)
     train_images = []
     val_images = []
 

@@ -1,11 +1,12 @@
 import pytorch_lightning as pl
+from torch.optim.lr_scheduler import CosineAnnealingLR
 from transformers import DetrForObjectDetection
 import torch
 
 
 class Detr(pl.LightningModule):
 
-    def __init__(self, lr, lr_backbone, weight_decay, train_dataloader=None, val_dataloader=None):
+    def __init__(self, lr, lr_backbone, weight_decay, train_dataloader=None, val_dataloader=None, max_epochs=10):
         super().__init__()
         # replace COCO classification head with custom head
         self.model = DetrForObjectDetection.from_pretrained("facebook/detr-resnet-50",
@@ -17,6 +18,7 @@ class Detr(pl.LightningModule):
         self.weight_decay = weight_decay
         self.train_dataloader_ = train_dataloader
         self.val_dataloader_ = val_dataloader
+        self.max_epochs = max_epochs
 
     def forward(self, pixel_values, pixel_mask):
         outputs = self.model(pixel_values=pixel_values, pixel_mask=pixel_mask)
@@ -63,7 +65,9 @@ class Detr(pl.LightningModule):
         optimizer = torch.optim.AdamW(param_dicts, lr=self.lr,
                                       weight_decay=self.weight_decay)
 
-        return optimizer
+        scheduler = CosineAnnealingLR(optimizer, T_max=self.max_epochs, eta_min=0)
+
+        return {"optimizer": optimizer, "lr_scheduler": scheduler}
 
     def train_dataloader(self):
         return self.train_dataloader_
