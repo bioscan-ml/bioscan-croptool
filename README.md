@@ -49,6 +49,11 @@ python scripts/crop_images.py --input_dir original_images --checkpoint_path inse
 in the terminal.
 Note that by setting  `--crop_ratio 1.4`, the cropped image is 1.4 scaled than the predicted boudning box. If you want to check the origional bounding box, you can add `--show_bbox` at the end of the command.
 
+To crop BIOSCAN-6M images:
+```shell
+python copy_to_local_then_crop_images_6M.py
+```
+
 
 If you want the cropped image in 4:3 ratio, you can add `--fix_ratio` to the command. Here is an example:
 ```shell
