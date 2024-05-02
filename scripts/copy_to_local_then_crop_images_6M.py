@@ -72,6 +72,30 @@ def rotate_image_and_bbox_if_necesscary(image, left, top, right, bottom):
     return image, new_left, new_top, new_right, new_bottom
 
 
+def zip_folder(folder_path, zip_name):
+    # Ensure the folder exists
+    if not os.path.exists(folder_path):
+        print("Folder does not exist.")
+        return
+
+    # Ensure the folder is a directory
+    if not os.path.isdir(folder_path):
+        print("Path is not a folder.")
+        return
+
+    # Ensure the zip name ends with .zip
+    if not zip_name.endswith('.zip'):
+        zip_name += '.zip'
+
+    try:
+        with zipfile.ZipFile(zip_name, 'w') as zipf:
+            for root, dirs, files in os.walk(folder_path):
+                for file in files:
+                    zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), folder_path))
+        print("Folder zipped successfully.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
 def change_size_to_4_3(left, top, right, bottom):
     width = right - left
     height = bottom - top
@@ -265,7 +289,6 @@ if __name__ == '__main__':
         shutil.rmtree(args.local_output_dir)
 
     while True:
-
         os.makedirs(args.local_input_dir, exist_ok=True)
         os.makedirs(args.local_output_dir, exist_ok=True)
 
@@ -301,20 +324,19 @@ if __name__ == '__main__':
 
         folder_name = f"part{curr_zip_index}"
 
-        # shutil.rmtree(image_folder_path)
+        zip_file_name = "cropped_" + folder_name + ".zip"
+        zip_folder(args.local_output_dir, "cropped_" + folder_name + ".zip")
 
-        if os.path.exists(os.path.join(args.remote_output_dir, "cropped_" + folder_name)):
-            shutil.rmtree(os.path.join(args.remote_output_dir, "cropped_" + folder_name))
+        try:
+            shutil.copy(zip_file_name, os.path.join(args.local_output_dir, zip_file_name))
+            print("Zip file copied successfully.")
+            shutil.rmtree(args.local_input_dir)
+            shutil.rmtree(args.local_output_dir)
+            os.remove(zip_file_name)
+        except Exception as e:
+            print(f"An error occurred while copying the zip file: {e}")
 
-        if os.path.exists(os.path.join(args.remote_output_dir, "cropped_resized_" + folder_name)):
-            shutil.rmtree(os.path.join(args.remote_output_dir, "cropped_resized_" + folder_name))
 
-        shutil.copytree(os.path.join(args.local_output_dir, "cropped_" + folder_name),
-                        os.path.join(args.remote_output_dir, "cropped_" + folder_name))
-        shutil.copytree(os.path.join(args.local_output_dir, "cropped_resized_" + folder_name),
-                        os.path.join(args.remote_output_dir, "cropped_resized_" + folder_name))
 
-        shutil.rmtree(args.local_input_dir)
-        shutil.rmtree(args.local_output_dir)
 
 
