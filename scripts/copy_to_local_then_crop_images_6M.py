@@ -233,16 +233,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # parser.add_argument('--input_dir', type=str, required=True,
     #                     help="Folder that contains the original images.")
-    parser.add_argument('--list_of_zip_index', type=str, default="/project/3dlg-hcvc/bioscan/www/BIOSCAN_6M/original_size/list_of_zip_index.json")
-    parser.add_argument('--remote_input_dir', type=str, default="/project/3dlg-hcvc/bioscan/www/BIOSCAN_6M/original_size",
+    parser.add_argument('--list_of_zip_index', type=str, default="/project/3dlg-hcvc/bioscan/www/BIOSCAN_5M/original_size/list_of_zip_index.json")
+    parser.add_argument('--remote_input_dir', type=str, default="/project/3dlg-hcvc/bioscan/www/BIOSCAN_5M/original_size",
                         help="Path to the directory that contains the tar files.")
     parser.add_argument('--local_input_dir', type=str, default="local_input_dir",
                         help="Path to the directory that you want to save the un-cropped image directories and the "
                              "checkpoint")
-    parser.add_argument('--checkpoint_path', type=str, default="/project/3dlg-hcvc/bioscan/www/BIOSCAN_6M/ckpt_for_cropping/cropping_tool_6M.ckpt")
+    parser.add_argument('--checkpoint_path', type=str, default="/project/3dlg-hcvc/bioscan/www/BIOSCAN_5M/ckpt_for_cropping/cropping_tool_6M.ckpt")
     parser.add_argument('--local_output_dir', type=str, default="local_output_dir",
                         help="Folder that will contain the cropped images in both un-resized and resized.")
-    parser.add_argument('--remote_output_dir', type=str, default="/project/3dlg-hcvc/bioscan/www/BIOSCAN_6M/cropped_images",
+    parser.add_argument('--remote_output_dir', type=str, default="/project/3dlg-hcvc/bioscan/www/BIOSCAN_5M/cropped_images",
                         help="Folder that will contain the cropped images in both un-resized and resized.")
     parser.add_argument('--save_resized', default=True,
                         action='store_true', help="Also save the image with shorter edge resized to 256")
