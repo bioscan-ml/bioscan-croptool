@@ -114,7 +114,7 @@ def crop_image(args, model, feature_extractor, device, image_folder_path):
     pbar_in_crop_image = tqdm(list_of_un_cropped_images)
 
     list_of_original_image_size_and_bbox = []
-
+    list_of_image_not_found = []
     for filename in pbar_in_crop_image:
         pbar_in_crop_image.set_description("Cropping images.")
         f = os.path.join(image_folder_path, filename)
@@ -123,7 +123,9 @@ def crop_image(args, model, feature_extractor, device, image_folder_path):
                 image = Image.open(f)
             except:
                 print("Image not found in: " + f)
+                list_of_image_not_found.append(filename)
                 continue
+
             encoding = feature_extractor(images=image, return_tensors="pt").to(device)
             pixel_values = encoding["pixel_values"].squeeze().unsqueeze(0)
             outputs = model(pixel_values=pixel_values, pixel_mask=None)
@@ -192,8 +194,15 @@ def crop_image(args, model, feature_extractor, device, image_folder_path):
                 cropped_and_resized_img.save(os.path.join(path_to_cropped_and_resized_folder,
                                                           "cropped_resized_" + filename))
 
-    with open(os.path.join(args.output_dir, 'size_of_original_image_and_bbox.json'), 'w') as file:
+    with open(os.path.join(path_to_cropped_folder, 'size_of_original_image_and_bbox.json'), 'w') as file:
         json.dump(list_of_original_image_size_and_bbox, file)
+    with open(os.path.join(path_to_cropped_and_resized_folder, 'size_of_original_image_and_bbox.json'), 'w') as file:
+        json.dump(list_of_original_image_size_and_bbox, file)
+
+    with open(os.path.join(path_to_cropped_folder, 'images_not_found.json'), 'w') as file:
+        json.dump(list_of_image_not_found, file)
+    with open(os.path.join(path_to_cropped_and_resized_folder, 'images_not_found.json'), 'w') as file:
+        json.dump(list_of_image_not_found, file)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -208,7 +217,7 @@ if __name__ == '__main__':
     parser.add_argument('--checkpoint_path', type=str, default="/project/3dlg-hcvc/bioscan/www/BIOSCAN_6M/ckpt_for_cropping/cropping_tool_6M.ckpt")
     parser.add_argument('--local_output_dir', type=str, default="local_output_dir",
                         help="Folder that will contain the cropped images in both un-resized and resized.")
-    parser.add_argument('--remote_output_dir', type=str, default="6M_cropped_image",
+    parser.add_argument('--remote_output_dir', type=str, default="/project/3dlg-hcvc/bioscan/www/BIOSCAN_6M/cropped_images",
                         help="Folder that will contain the cropped images in both un-resized and resized.")
     parser.add_argument('--save_resized', default=True,
                         action='store_true', help="Also save the image with shorter edge resized to 256")
@@ -218,11 +227,11 @@ if __name__ == '__main__':
                         action='store_true')
     parser.add_argument('--width_of_bbox', type=int, default=3,
                         help="Define the width of the bound of bounding boxes.")
-    parser.add_argument('--fix_ratio', default=False,
+    parser.add_argument('--fix_ratio', default=True,
                         action='store_true', help='Further extent the image to make the ratio in 4:3.')
     parser.add_argument('--equal_extend', default=True,
                         action='store_true', help='Extand equal size in both height and width.')
-    parser.add_argument('--rotate_image', default=False,
+    parser.add_argument('--rotate_image', default=True,
                         action='store_true', help='Rotate the insect to fit 4:3 naturally.')
 
     parser.add_argument('--background_color_R', type=int, default=204,
@@ -264,6 +273,9 @@ if __name__ == '__main__':
 
         curr_zip_index = list_of_zip_index.pop(0)
 
+        with open(args.list_of_zip_index, 'w') as file:
+            json.dump(list_of_zip_index, file)
+
         target_zip_name = f"bioscan_images_original_full_part{curr_zip_index}.zip"
         target_zip_path = os.path.join(args.remote_input_dir, target_zip_name)
 
@@ -282,7 +294,7 @@ if __name__ == '__main__':
         os.remove(local_zip_path)
 
         image_folder_path = os.path.join(args.local_input_dir, 'bioscan', 'images', 'original_full', f'part{curr_zip_index}')
-        args.current_image_folder_name = os.path.join('bioscan', 'images', 'original_full', f'part{curr_zip_index}')
+        args.current_image_folder_name = f'part{curr_zip_index}'
         crop_image(args, model, feature_extractor, device, image_folder_path)
 
         folder_name = f"part{curr_zip_index}"
@@ -303,5 +315,4 @@ if __name__ == '__main__':
         shutil.rmtree(args.local_input_dir)
         shutil.rmtree(args.local_output_dir)
 
-        with open(args.list_of_zip_index, 'w') as file:
-            json.dump(list_of_zip_index, file)
+
