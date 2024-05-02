@@ -121,87 +121,88 @@ def crop_image(args, model, feature_extractor, device, image_folder_path):
         if os.path.isfile(f):
             try:
                 image = Image.open(f)
+                encoding = feature_extractor(images=image, return_tensors="pt").to(device)
+                pixel_values = encoding["pixel_values"].squeeze().unsqueeze(0)
+                outputs = model(pixel_values=pixel_values, pixel_mask=None)
+                pred_logit = outputs.logits[0]
+                pred_boxes = outputs.pred_boxes[0]
+                bbox = get_bbox_from_output(pred_logit, pred_boxes, image).detach().numpy()
+                bbox = np.round(bbox, 0)
+                left, top, right, bottom = bbox[0], bbox[1], bbox[2], bbox[3]
+                if args.show_bbox:
+                    draw = ImageDraw.Draw(image)
+                    draw.rectangle((left, top, right, bottom), outline=(255, 0, 0), width=args.width_of_bbox)
+                left, top, right, bottom = scale_bbox(args, left, top, right, bottom)
+
+                image_size = image.size
+
+                list_of_original_image_size_and_bbox.append(
+                    {'filename': filename, 'original_size': image_size, 'bbox': bbox.tolist()})
+
+                if args.fix_ratio:
+                    width = right - left
+                    height = bottom - top
+
+                    if height > width and args.rotate_image:
+                        image, left, top, right, bottom = rotate_image_and_bbox_if_necesscary(image, left, top, right,
+                                                                                              bottom)
+                        image_size = image.size
+
+                    left, top, right, bottom = change_size_to_4_3(left, top, right, bottom)
+                    left = round(left)
+                    top = round(top)
+                    right = round(right)
+                    bottom = round(bottom)
+                    # if left < 0 or top < 0 or right > image_size[0] or bottom > image_size[1]:
+                    #     print("Please crop this image manually: " + f)
+
+                # cropped_img = image.crop((max(left, 0), max(top, 0), min(right, image_size[0]), min(bottom, image_size[1])))
+
+                # Check if width is smaller than the bbox
+
+                if left < 0:
+                    border_size = 0 - left
+                    right = right - left
+                    left = 0
+                    image = expand_image(args, image, border_size, 'left')
+
+                if top < 0:
+                    border_size = 0 - top
+                    bottom = bottom - top
+                    top = 0
+                    image = expand_image(args, image, border_size, 'top')
+
+                if right > image.size[0]:
+                    border_size = right - image.size[0] + 1
+                    image = expand_image(args, image, border_size, 'right')
+
+                if bottom > image.size[1]:
+                    border_size = bottom - image.size[1] + 1
+                    image = expand_image(args, image, border_size, 'bottom')
+
+                cropped_img = image.crop((left, top, right, bottom))
+
+                cropped_img.save(os.path.join(path_to_cropped_folder, "cropped_" + filename))
+                if args.save_resized:
+                    new_width, new_height = get_size_with_aspect_ratio(cropped_img.size, 256)
+                    cropped_and_resized_img = cropped_img.resize((new_width, new_height))
+                    cropped_and_resized_img.save(os.path.join(path_to_cropped_and_resized_folder,
+                                                              "cropped_resized_" + filename))
             except:
-                print("Image not found in: " + f)
+                print("Image not found or failed: " + f)
                 list_of_image_not_found.append(filename)
                 continue
 
-            encoding = feature_extractor(images=image, return_tensors="pt").to(device)
-            pixel_values = encoding["pixel_values"].squeeze().unsqueeze(0)
-            outputs = model(pixel_values=pixel_values, pixel_mask=None)
-            pred_logit = outputs.logits[0]
-            pred_boxes = outputs.pred_boxes[0]
-            bbox = get_bbox_from_output(pred_logit, pred_boxes, image).detach().numpy()
-            bbox = np.round(bbox, 0)
-            left, top, right, bottom = bbox[0], bbox[1], bbox[2], bbox[3]
-            if args.show_bbox:
-                draw = ImageDraw.Draw(image)
-                draw.rectangle((left, top, right, bottom), outline=(255, 0, 0), width=args.width_of_bbox)
-            left, top, right, bottom = scale_bbox(args, left, top, right, bottom)
 
-            image_size = image.size
-
-            list_of_original_image_size_and_bbox.append(
-                {'filename': filename, 'original_size': image_size, 'bbox': bbox.tolist()})
-
-            if args.fix_ratio:
-                width = right - left
-                height = bottom - top
-
-                if height > width and args.rotate_image:
-                    image, left, top, right, bottom = rotate_image_and_bbox_if_necesscary(image, left, top, right,
-                                                                                          bottom)
-                    image_size = image.size
-
-                left, top, right, bottom = change_size_to_4_3(left, top, right, bottom)
-                left = round(left)
-                top = round(top)
-                right = round(right)
-                bottom = round(bottom)
-                # if left < 0 or top < 0 or right > image_size[0] or bottom > image_size[1]:
-                #     print("Please crop this image manually: " + f)
-
-            # cropped_img = image.crop((max(left, 0), max(top, 0), min(right, image_size[0]), min(bottom, image_size[1])))
-
-            # Check if width is smaller than the bbox
-
-            if left < 0:
-                border_size = 0 - left
-                right = right - left
-                left = 0
-                image = expand_image(args, image, border_size, 'left')
-
-            if top < 0:
-                border_size = 0 - top
-                bottom = bottom - top
-                top = 0
-                image = expand_image(args, image, border_size, 'top')
-
-            if right > image.size[0]:
-                border_size = right - image.size[0] + 1
-                image = expand_image(args, image, border_size, 'right')
-
-            if bottom > image.size[1]:
-                border_size = bottom - image.size[1] + 1
-                image = expand_image(args, image, border_size, 'bottom')
-
-            cropped_img = image.crop((left, top, right, bottom))
-
-            cropped_img.save(os.path.join(path_to_cropped_folder, "cropped_" + filename))
-            if args.save_resized:
-                new_width, new_height = get_size_with_aspect_ratio(cropped_img.size, 256)
-                cropped_and_resized_img = cropped_img.resize((new_width, new_height))
-                cropped_and_resized_img.save(os.path.join(path_to_cropped_and_resized_folder,
-                                                          "cropped_resized_" + filename))
 
     with open(os.path.join(path_to_cropped_folder, 'size_of_original_image_and_bbox.json'), 'w') as file:
         json.dump(list_of_original_image_size_and_bbox, file)
     with open(os.path.join(path_to_cropped_and_resized_folder, 'size_of_original_image_and_bbox.json'), 'w') as file:
         json.dump(list_of_original_image_size_and_bbox, file)
 
-    with open(os.path.join(path_to_cropped_folder, 'images_not_found.json'), 'w') as file:
+    with open(os.path.join(path_to_cropped_folder, 'images_not_found_or_failed.json'), 'w') as file:
         json.dump(list_of_image_not_found, file)
-    with open(os.path.join(path_to_cropped_and_resized_folder, 'images_not_found.json'), 'w') as file:
+    with open(os.path.join(path_to_cropped_and_resized_folder, 'images_not_found_or_failed.json'), 'w') as file:
         json.dump(list_of_image_not_found, file)
 
 if __name__ == '__main__':
@@ -251,6 +252,7 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
 
+    os.makedirs(args.remote_output_dir, exist_ok=True)
 
     # Load list from list_of_zip_index
     with open(args.list_of_zip_index) as file:
