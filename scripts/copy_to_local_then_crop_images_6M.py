@@ -328,15 +328,10 @@ if __name__ == '__main__':
         zip_folder(args.local_output_dir, "cropped_" + folder_name + ".zip")
 
         try:
-            shutil.copy(zip_file_name, os.path.join(args.local_output_dir, zip_file_name))
+            shutil.copy(zip_file_name, os.path.join(args.remote_output_dir, zip_file_name))
             print("Zip file copied successfully.")
             shutil.rmtree(args.local_input_dir)
             shutil.rmtree(args.local_output_dir)
             os.remove(zip_file_name)
         except Exception as e:
             print(f"An error occurred while copying the zip file: {e}")
-
-
-
-
-
