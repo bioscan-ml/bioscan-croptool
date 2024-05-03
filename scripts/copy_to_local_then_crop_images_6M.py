@@ -278,9 +278,7 @@ if __name__ == '__main__':
 
     os.makedirs(args.remote_output_dir, exist_ok=True)
 
-    # Load list from list_of_zip_index
-    with open(args.list_of_zip_index) as file:
-        list_of_zip_index = json.load(file)
+
 
     if os.path.exists(args.local_input_dir):
         shutil.rmtree(args.local_input_dir)
@@ -289,8 +287,11 @@ if __name__ == '__main__':
         shutil.rmtree(args.local_output_dir)
 
     while True:
-        os.makedirs(args.local_input_dir, exist_ok=True)
-        os.makedirs(args.local_output_dir, exist_ok=True)
+        # Load list from list_of_zip_index
+        with open(args.list_of_zip_index) as file:
+            list_of_zip_index = json.load(file)
+        # os.makedirs(args.local_input_dir, exist_ok=True)
+        # os.makedirs(args.local_output_dir, exist_ok=True)
 
         if len(list_of_zip_index) == 0:
             print("No tar files to process.")
