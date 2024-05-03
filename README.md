@@ -9,7 +9,6 @@ git clone git@github.com:zmgong/BioScan-croptool.git
 cd BioScan-croptool
 conda create -n BioScan-croptool python=3.10
 conda activate BioScan-croptool
-conda install pytorch torchvision pytorch-cuda=11.7 -c pytorch -c nvidia
 pip install -r requirements.txt
 
 ```
