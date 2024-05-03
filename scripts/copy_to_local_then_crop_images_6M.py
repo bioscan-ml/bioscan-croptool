@@ -290,8 +290,8 @@ if __name__ == '__main__':
         # Load list from list_of_zip_index
         with open(args.list_of_zip_index) as file:
             list_of_zip_index = json.load(file)
-        # os.makedirs(args.local_input_dir, exist_ok=True)
-        # os.makedirs(args.local_output_dir, exist_ok=True)
+        os.makedirs(args.local_input_dir, exist_ok=True)
+        os.makedirs(args.local_output_dir, exist_ok=True)
 
         if len(list_of_zip_index) == 0:
             print("No tar files to process.")
