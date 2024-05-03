@@ -12,6 +12,7 @@ from model.detr import load_model_from_ckpt
 from util.visualize_and_process_bbox import get_bbox_from_output, scale_bbox
 import json
 import zipfile
+import re
 
 """
 This is a special one time script for special purpose,  will be removed from the repo after the task is done.
@@ -229,6 +230,16 @@ def crop_image(args, model, feature_extractor, device, image_folder_path):
     with open(os.path.join(path_to_cropped_and_resized_folder, 'images_not_found_or_failed.json'), 'w') as file:
         json.dump(list_of_image_not_found, file)
 
+# get index at the end
+
+def get_index_at_end(s):
+    match = re.search(r'\d+$', s)
+    if match:
+        integer_at_end = int(match.group())
+        return integer_at_end
+    else:
+        return None
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # parser.add_argument('--input_dir', type=str, required=True,
@@ -280,27 +291,37 @@ if __name__ == '__main__':
 
 
 
-    if os.path.exists(args.local_input_dir):
-        shutil.rmtree(args.local_input_dir)
-
-    if os.path.exists(args.local_output_dir):
-        shutil.rmtree(args.local_output_dir)
+    # if os.path.exists(args.local_input_dir):
+    #     shutil.rmtree(args.local_input_dir)
+    #
+    # if os.path.exists(args.local_output_dir):
+    #     shutil.rmtree(args.local_output_dir)
 
     while True:
         # Load list from list_of_zip_index
-        with open(args.list_of_zip_index) as file:
-            list_of_zip_index = json.load(file)
+        resume = False
+        if os.path.exists(args.local_output_dir):
+            resume = True
+
         os.makedirs(args.local_input_dir, exist_ok=True)
         os.makedirs(args.local_output_dir, exist_ok=True)
 
-        if len(list_of_zip_index) == 0:
-            print("No tar files to process.")
-            exit(0)
+        if resume:
+            curr_zip_index = get_index_at_end(os.listdir(args.local_output_dir)[0])
 
-        curr_zip_index = list_of_zip_index.pop(0)
 
-        with open(args.list_of_zip_index, 'w') as file:
-            json.dump(list_of_zip_index, file)
+        else:
+            with open(args.list_of_zip_index) as file:
+                list_of_zip_index = json.load(file)
+
+
+            if len(list_of_zip_index) == 0:
+                print("No tar files to process.")
+                exit(0)
+
+            curr_zip_index = list_of_zip_index.pop(0)
+            with open(args.list_of_zip_index, 'w') as file:
+                json.dump(list_of_zip_index, file)
 
         target_zip_name = f"bioscan_images_original_full_part{curr_zip_index}.zip"
         target_zip_path = os.path.join(args.remote_input_dir, target_zip_name)
@@ -308,15 +329,12 @@ if __name__ == '__main__':
         if not os.path.exists(target_zip_path):
             print(f"Zip file not found: {target_zip_path}")
             continue
-
         local_zip_path = os.path.join(args.local_input_dir, target_zip_name)
-
         shutil.copyfile(target_zip_path, local_zip_path)
 
         with zipfile.ZipFile(local_zip_path, 'r') as zip_ref:
             # Extract all the contents into the same folder
             zip_ref.extractall(args.local_input_dir)
-
         os.remove(local_zip_path)
 
         image_folder_path = os.path.join(args.local_input_dir, 'bioscan', 'images', 'original_full', f'part{curr_zip_index}')
