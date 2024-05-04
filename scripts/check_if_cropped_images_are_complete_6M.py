@@ -326,9 +326,11 @@ if __name__ == '__main__':
             json.dump(list_of_processing_and_precessed_idx, file)
 
         path_to_the_cropped_zip = os.path.join(args.remote_output_dir, "cropped_part" + str(curr_zip_index) + ".zip")
-        shutil.copyfile(path_to_the_cropped_zip, os.path.join(args.local_output_dir, "cropped_part" + str(curr_zip_index) + ".zip"))
+
         if os.path.exists(path_to_the_cropped_zip):
             # Check if cropping is completely completed
+            shutil.copyfile(path_to_the_cropped_zip,
+                            os.path.join(args.local_output_dir, "cropped_part" + str(curr_zip_index) + ".zip"))
             with zipfile.ZipFile(os.path.join(args.local_output_dir, "cropped_part" + str(curr_zip_index) + ".zip"), 'r') as zip_ref:
                 zip_ref.extractall(args.local_output_dir)
 
