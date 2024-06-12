@@ -34,7 +34,7 @@ If you want to use it, you can put it into your project folder ,and change the `
 # Evaluation
 To evaluate the checkpoint:
 ```shell
-python scripts/visualization.py --data_dir data/insect --checkpoint_path insect_detection_ckpt/lightning_logs/version_0/checkpoints/epoch=11-step=300.ckpt
+python scripts/evaluate.py --data_dir data/insect --checkpoint_path insect_detection_ckpt/lightning_logs/version_0/checkpoints/epoch=11-step=300.ckpt
 ```
 
 # Visualization
