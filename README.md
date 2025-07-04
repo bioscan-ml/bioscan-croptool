@@ -5,7 +5,7 @@
 # Set environment
 For now, you can set the environment by typing
 ```shell
-git clone git@github.com:bioscan-ml/BioScan-croptool.git
+git clone git@github.com:bioscan-ml/bioscan-croptool.git
 cd BioScan-croptool
 conda create -n BioScan-croptool python=3.10
 conda activate BioScan-croptool
