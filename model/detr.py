@@ -76,8 +76,8 @@ class Detr(pl.LightningModule):
         return self.val_dataloader_
 
 
-def load_model_from_ckpt(args):
+def load_model_from_ckpt(cpath):
     model = Detr.load_from_checkpoint(lr=1e-4, lr_backbone=1e-5, weight_decay=1e-4,
-                                      checkpoint_path=args.checkpoint_path)
+                                      checkpoint_path=cpath)
     model.eval()
     return model
