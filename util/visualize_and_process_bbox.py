@@ -24,7 +24,6 @@ def visualize_predictions(image, outputs, id2label, threshold=0.5):
 
 
 def rescale_bboxes(out_bbox, size):
-    print("size:", size)
     img_w, img_h = size
     b = box_cxcywh_to_xyxy(out_bbox)
     b = b * torch.tensor([img_w, img_h, img_w, img_h], dtype=torch.float32)
@@ -64,9 +63,6 @@ def get_bbox_from_output(pred_logit, pred_pred_boxes, image):
     arg_max = probas_.argmax()
     probas_ = F.one_hot(arg_max, num_classes=len(probas_))
     keep = probas_ > 0.5
-    # print(image.shape[0])
-    # print(image.shape[1])
-    # print(image)
     bboxes_scaled = rescale_bboxes(pred_pred_boxes[keep].cpu(), image.size)
     return bboxes_scaled[0]
 
