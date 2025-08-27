@@ -14,7 +14,7 @@ from util.loader_for_cropping import init_loader_with_folder_name_and_list_of_im
 import json
 
 
-def expand_image(args, image, size, direction):
+def expand_image(args.background_color_r, args.background_color_g, args.background_color_b, image, size, direction):
     border_color = (args.background_color_R, args.background_color_G, args.background_color_B)
     border_image = None
     if direction == 'left':
@@ -109,21 +109,21 @@ def crop_image(args, model, image_loader, feature_extractor, device):
                 border_size = 0 - left
                 right = right - left
                 left = 0
-                image = expand_image(args, image, border_size, 'left')
+                image = expand_image(args.background_color_r, args.background_color_g, args.background_color_b, image, border_size, 'left')
 
             if top < 0:
                 border_size = 0 - top
                 bottom = bottom - top
                 top = 0
-                image = expand_image(args, image, border_size, 'top')
+                image = expand_image(args.background_color_r, args.background_color_g, args.background_color_b, image, border_size, 'top')
 
             if right > image.size[0]:
                 border_size = right - image.size[0] + 1
-                image = expand_image(args, image, border_size, 'right')
+                image = expand_image(args.background_color_r, args.background_color_g, args.background_color_b, image, border_size, 'right')
 
             if bottom > image.size[1]:
                 border_size = bottom - image.size[1] + 1
-                image = expand_image(args, image, border_size, 'bottom')
+                image = expand_image(args.background_color_r, args.background_color_g, args.background_color_b, image, border_size, 'bottom')
 
             cropped_img = image.crop((left, top, right, bottom))
             filename = list_of_file_name[index]
