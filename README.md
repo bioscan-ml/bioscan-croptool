@@ -47,7 +47,7 @@ Alternatively, you can skip training by downloading a pre-trained checkpoint. Cr
 wget https://aspis.cmpt.sfu.ca/projects/bioscan/for_easy_start/insect_detection_ckpt.zip
 unzip insect_detection_ckpt.zip
 ```
-If you use the downloaded checkpoint, use `--checkpoint_path insect_detection_ckpt/ckpt_for_pined_images.ckpt` in the following commands.
+If you use the downloaded checkpoint, use `--checkpoint_path insect_detection_ckpt/checkpoints/cropping_tool.ckpt` in the following commands.
 
 # Evaluation
 To evaluate the checkpoint:
