@@ -8,10 +8,17 @@ from torchvision.transforms import transforms
 class ImageFolderDataset(Dataset):
     def __init__(self, path_to_input_folder, transform=None, list_of_images=None):
         self.folder_path = path_to_input_folder
+        # Only keep common image files, skip others (e.g., .json)
+        valid_exts = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".bmp", ".gif", ".webp"}
         if list_of_images is None:
-            self.image_names = os.listdir(path_to_input_folder)
+            candidates = os.listdir(path_to_input_folder)
         else:
-            self.image_names = list_of_images
+            candidates = list_of_images
+
+        self.image_names = [
+            name for name in candidates
+            if os.path.splitext(name)[1].lower() in valid_exts
+        ]
 
         if transform is not None:
             self.transform = transform
