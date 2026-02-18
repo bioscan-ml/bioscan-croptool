@@ -14,8 +14,12 @@ pip install -r requirements.txt
 ```
 in the terminal. However, based on your GPU version, you may have to modify the torch version and install other packages manually in difference version.
 # Data preparation
-Please download the annotated data and images by `wget https://aspis.cmpt.sfu.ca/projects/bioscan/BIOUG_1k_images_resized.zip`. Then unzip it in `/data`.
-You can split and prepare the data by
+Please download the annotated data and images, then unzip it in `/data`:
+```shell
+wget https://aspis.cmpt.sfu.ca/projects/bioscan/BIOUG_1k_images_resized.zip
+unzip BIOUG_1k_images_resized.zip -d data
+```
+You can split and prepare the data by:
 ```shell
 python scripts/complete_coco_json.py --input_dir data/resized
 python scripts/split_data.py --input_dir data/resized --dataset_name data/insect
@@ -25,11 +29,16 @@ Note that some of the information is missing from their coco annotation file, th
 
 
 # Train and eval
+To train the model:
 ```shell
 python scripts/train.py --data_dir data/insect --output_dir insect_detection_ckpt
 ```
-Here is a checkpoint for you to use, so you can skip the training. `wget https://aspis.cmpt.sfu.ca/projects/bioscan/ckpt_for_pined_images.ckpt`
-If you want to use it, you can put it into your project folder ,and change the `checkpoint_path` in following commands. (To `--checkpoint_path ckpt_for_pined_images.ckpt`)
+Alternatively, you can skip training by downloading a pre-trained checkpoint. Create the directory and download the checkpoint into it:
+```shell
+mkdir -p insect_detection_ckpt
+wget -O insect_detection_ckpt/ckpt_for_pined_images.ckpt https://aspis.cmpt.sfu.ca/projects/bioscan/ckpt_for_pined_images.ckpt
+```
+If you use the downloaded checkpoint, use `--checkpoint_path insect_detection_ckpt/ckpt_for_pined_images.ckpt` in the following commands.
 
 # Evaluation
 To evaluate the checkpoint:
