@@ -66,13 +66,25 @@ You can put the insect images that need to be cropped in a folder (Maybe call `o
 python scripts/crop_images.py --input_dir original_images --checkpoint_path insect_detection_ckpt/checkpoints/cropping_tool.ckpt --crop_ratio 1.4
 ```
 in the terminal.
+For faster cropping, you can increase `--batch_size` (e.g., to 4), but it may be limited by your GPU memory.
+Common parameters in `scripts/crop_images.py`:
+- **`--input_dir`**: folder that contains the original images to crop.
+- **`--output_dir`**: output folder for cropped images (default: `cropped_image`). A `size_of_original_image_and_bbox.json` will also be saved there.
+- **`--checkpoint_path`**: path to the trained checkpoint.
+- **`--batch_size`**: number of images per batch (default: 1). Larger values are faster but use more GPU memory.
+- **`--crop_ratio`**: scale factor applied to the predicted bounding box before cropping (default: 1.4).
+- **`--show_bbox`**: draw the predicted bounding box on the image for debugging.
+- **`--width_of_bbox`**: bounding box line width when `--show_bbox` is enabled (default: 3).
+- **`--fix_ratio`**: further extend the crop region to make the output image ratio 4:3 (may add padding if needed).
+- **`--rotate_image`**: when used with `--fix_ratio`, rotate the image to better fit a 4:3 crop when the object is taller than wide.
+- **`--background_color_R/G/B`**: background color used for padding when the crop region extends outside the image boundary.
+
 Note that by setting  `--crop_ratio 1.4`, the cropped image is 1.4 scaled than the predicted boudning box. If you want to check the origional bounding box, you can add `--show_bbox` at the end of the command.
 
 <!-- To crop BIOSCAN-6M images:
 ```shell
 python copy_to_local_then_crop_images_6M.py
 ``` -->
-
 
 If you want the cropped image in 4:3 ratio, you can add `--fix_ratio` to the command. Here is an example:
 ```shell

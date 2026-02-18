@@ -2,6 +2,7 @@ import argparse
 from PIL import Image
 import os
 import sys
+import random
 from transformers import DetrFeatureExtractor
 from crop_images import load_model_from_ckpt
 from project_path import project_dir
@@ -10,7 +11,12 @@ from util.visualize_and_process_bbox import visualize_predictions
 
 
 def visualize(args, val_dataset, model, id2label):
-    for i in range(args.visualize_number):
+    num_samples = min(args.visualize_number, len(val_dataset))
+    if args.random_select_image:
+        indices = random.sample(range(len(val_dataset)), num_samples)
+    else:
+        indices = list(range(num_samples))
+    for i in indices:
         pixel_values, target = val_dataset[i]
         pixel_values = pixel_values.unsqueeze(0)
         outputs = model(pixel_values=pixel_values, pixel_mask=None)
@@ -29,6 +35,8 @@ if __name__ == '__main__':
     parser.add_argument('--checkpoint_path', type=str, required=True,
                         help="Path to the checkpoint.")
     parser.add_argument('--visualize_number', type=int, default=5)
+    parser.add_argument('--random_select_image', action='store_true', default=True,
+                        help="If true, randomly select images; otherwise use the first N images.")
     args = parser.parse_args()
 
     model = load_model_from_ckpt(args)
